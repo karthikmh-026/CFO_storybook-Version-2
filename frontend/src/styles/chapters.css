@@ -201,8 +201,8 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: var(--accent-soft);
-  border: 1px solid rgba(217, 184, 114, 0.3);
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 16px 20px;
 }
