@@ -587,11 +587,11 @@ def get_exec_summary(entity=None):
             "netDebt": -45.5,
             "cashConversionCycle": 68,
             "workingCapital": 54.8,
-            "readsAs": "Pitti International FZE & Subsidiaries (Consolidated minus Standalone 1000). Reflects export market contribution and international operations.",
+            "readsAs": "A capex year. The plant is being scaled ahead of the demand curve — depreciation and interest are front-loaded, revenue and PAT catch up later.",
             "alerts": [
-                {"label": "DSO 35 days — export account realizations on schedule", "severity": "low"},
-                {"label": "MSME payables of ₹2.4 Cr due within 45 days", "severity": "medium"},
-                {"label": "Net cash surplus position of ₹45.5 Cr across overseas subsidiaries", "severity": "low"},
+                {"label": "DSO stretched to 39 days — ₹38 Cr overdue 90+ days, concentrated in 3 export accounts", "severity": "high"},
+                {"label": "MSME payables of ₹2.4 Cr fall due within 45 days", "severity": "medium"},
+                {"label": "Net debt up to ₹552 Cr on the Macharam capex cycle", "severity": "medium"},
             ],
         }
     w = _entity_weight(entity)
@@ -668,7 +668,7 @@ def get_value_chain(entity=None):
     elif entity == "4000":
         return {
             "headline": "How steel becomes revenue.",
-            "subhead": "Follow one flow, left to right — international trade and subsidiary processing volumes (Consolidated minus 1000).",
+            "subhead": "Follow one flow, left to right — each stage adds margin, and the finished parts fan out into the sectors that pay for them.",
             "stages": [
                 {
                     "kind": "input",
@@ -832,7 +832,7 @@ def get_pl_bridge(entity=None):
                 {"quarter": "Q3 FY26", "gm": gm_pct, "ebitda": ebitda_pct, "pat": pat_pct},
             ],
             "variance": {"budget": 300.0, "actual": round(rev, 1)},
-            "watch": "Consolidated minus 1000 contribution. Higher gross margin on specialized export lines with lower fixed overheads.",
+            "watch": "Once the Macharam facility turns revenue-generating, the same depreciation base spreads over a larger topline — PAT should re-converge with EBITDA.",
             "quarterlyKpis": []
         }
     w = _entity_weight(entity)
@@ -1017,7 +1017,7 @@ def get_ratios_valuation(entity=None):
                 {"label": "Net Debt", "value": "₹-45 Cr", "delta": "Net Cash", "trend": "up", "highlight": True},
                 {"label": "Covenant Headroom", "value": "1.5x", "delta": "comfortable", "trend": "up"},
             ],
-            "closingHook": "End of executive review (Consolidated - 1000) — next, order-to-cash and anomaly chapter.",
+            "closingHook": "End of the executive review — next, the order-to-cash and anomaly chapter.",
             "quarterlyKpis": None,
             "quarterlyGmKpis": None
         }
