@@ -1,0 +1,54 @@
+.chapter-rail {
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  align-items: center;
+}
+
+.chapter-rail__dot {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chapter-rail__marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  transition: background 0.3s ease, transform 0.3s ease;
+  display: block;
+}
+
+.chapter-rail__dot.is-active .chapter-rail__marker {
+  background: var(--accent);
+  transform: scale(1.5);
+}
+
+.chapter-rail__tooltip {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.chapter-rail__dot:hover .chapter-rail__tooltip {
+  opacity: 1;
+}

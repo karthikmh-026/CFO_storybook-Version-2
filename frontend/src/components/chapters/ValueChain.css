@@ -1,0 +1,117 @@
+.vc-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 20px;
+}
+
+.vc-stage {
+  flex: 1;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 22px 20px;
+}
+
+.vc-stage--stage-highlight {
+  border-color: rgba(217, 184, 114, 0.35);
+}
+
+.vc-stage--output {
+  flex: 1.15;
+  background: linear-gradient(180deg, rgba(217, 184, 114, 0.1), var(--bg-panel));
+  border-color: rgba(217, 184, 114, 0.35);
+}
+
+.vc-stage__tag {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.vc-stage--stage-highlight .vc-stage__tag,
+.vc-stage--output .vc-stage__tag {
+  color: var(--accent);
+}
+
+.vc-stage__name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.vc-stage__detail {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.vc-stage__value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-top: 16px;
+}
+
+.vc-stage--output .vc-stage__value {
+  color: var(--accent);
+}
+
+.vc-stage__delta {
+  font-size: 0.76rem;
+  color: var(--positive);
+  margin-left: 8px;
+}
+
+.vc-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: var(--text-faint);
+  font-size: 1.4rem;
+}
+
+.vc-sectors {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.vc-sectors__label {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.vc-sectors__list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vc-chip {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+}
+
+.vc-chip--highlight {
+  background: rgba(217, 184, 114, 0.1);
+  border-color: rgba(217, 184, 114, 0.35);
+  color: var(--accent);
+}
+
+.vc-chip__share {
+  color: var(--positive);
+  font-size: 0.72rem;
+}
+
+.vc-chip--highlight .vc-chip__share {
+  color: var(--accent);
+}

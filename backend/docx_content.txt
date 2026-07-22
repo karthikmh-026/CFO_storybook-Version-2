@@ -1,0 +1,205 @@
+1: CFO Dashboard
+3: 1. Executive Summary Dashboard
+4: Revenue (MTD/QTD/YTD) – Consolidated & Standalone
+5: EBITDA, EBIT, PAT – Growth % (YoY / QoQ)
+6: Cash & Bank Balances
+7: Net Debt Position
+8: Cash Conversion Cycle
+9: Working Capital Summary
+10: Key Alerts/Exceptions (TDS due, negative stocks, overdue receivables, etc.)
+11: Quick Links to Drill-Down Reports
+13: 2. Financial Statements Dashboard
+14: 2.1 Profit & Loss Statement (Console & Standalone)
+15: Comparative View: Monthly, Quarterly, Yearly
+16: Drill-down capability: Cost Center → GL → Transaction Level , PIVOT Table model (Options available for selection)
+17: KPIs: Revenue Growth, GM%, EBITDA%, EBIT%, PAT%, EPS
+18: Variance Analysis: Budget vs Actual, Forecast vs Actual
+19: 2.2 Balance Sheet (Console & Standalone)
+20: Monthly/Quarterly/Annual Comparatives
+21: Drill down: Schedule-wise → GL → Line Item
+22: Net Worth, Total Debt, Capital Employed
+23: Working Capital Snapshot
+24: 2.3 Cash Flow Statement
+25: Operating, Investing, Financing Cash Flows
+26: Free Cash Flow
+27: Drill-down to GL & Document Level
+28: 2.4 Funds Flow Statement
+29: Sources & Uses of Funds
+30: Movement in Working Capital
+32: 3. Ratio Analysis Dashboard
+33: Ratios displayed with trends, graphs, and drill-down for formula components.
+34: Liquidity Ratios:
+35: Current Ratio
+36: Quick Ratio
+37: Cash Ratio
+38: Profitability Ratios:
+39: Gross Margin
+40: EBITDA Margin
+41: EBIT Margin
+42: ROE, ROCE
+43: ROA
+44: Efficiency Ratios:
+45: Inventory Days
+46: Receivable Days
+47: Payable Days
+48: Asset Turnover
+49: Leverage Ratios:
+50: Debt-Equity Ratio
+51: Interest Coverage Ratio
+52: Net Debt/EBITDA
+53: Market Valuation Ratios: (Synced with stock exchange data)
+54: EPS, PE Ratio
+55: Book Value
+56: Market Cap
+57: EV/EBITDA
+59: 4. Sales Analytics Dashboard
+60: Breakups with Charts & Trendlines
+61: Geo-wise: Export vs Domestic
+62: Customer-wise / Customer Group-wise
+63: Industry Segment-wise
+64: Product-wise
+65: Entity-wise & Unit-wise
+66: Sales Quantity vs Value analysis
+67: Contribution margin by product & customer
+68: Open Sales Orders
+69: Customer PO details
+70: Realization tracking
+72: 5. Expense Analytics Dashboard
+73: Expense Category Drill-down
+74: Raw Material Consumption
+75: Employee Expenses
+76: Finance Costs
+77: Other Expenses
+78: Depreciation & Amortization
+79: Comparatives: Monthly / Quarterly / Yearly and entity-wise & unit-wise.
+80: Drill Down Capability
+81: Cost center → GL → Document Posting Level → PO → GRN linkage
+83: 6. Balance Sheet Working Capital Analytics
+84: 6.1 Net Current Assets Dashboard
+85: Current Assets & Liabilities – full breakup
+86: 6.2 Inventory Dashboard
+87: Product-wise, Unit-wise Inventory
+88: UOM, Qty, Rate, Value
+89: Ageing Analysis
+90: Slow-moving, non-moving stock flags
+91: 6.3 Receivables Dashboard
+92: Export vs Domestic
+93: Ageing: Invoice Date wise & Due Date wise
+94: Customer-wise outstanding
+95: Unrealized export proceeds
+96: 6.4 Advances Dashboard
+97: RM Advances
+98: Capital Advances
+99: Employee Advances
+100: Ageing
+101: 6.5 Payables Dashboard
+102: Import vs Domestic
+103: MSME identification
+104: Due date-based ageing
+105: 6.6 Other Current Liabilities & Provisions
+106: Tax liabilities
+107: Statutory dues
+108: Accrued expenses
+110: 7. Fixed Assets Dashboard
+111: FA Module Integrated View
+112: Block-wise Gross Block, Depreciation, Net Block
+113: ROU Assets (IFRS/Ind AS compliance)
+114: Capital WIP – ageing
+115: Asset costing including landed cost, duties, freight
+116: Depreciation run reconciliation
+118: 8. Treasury Dashboard
+119: 8.1 Net Debt Summary
+120: Total Borrowings – Short-term, Long-term
+121: Less: Cash & Bank, FD, Lien FDs
+122: Net Debt Movement – month-wise
+123: 8.2 Borrowings Dashboard
+124: Loan-wise breakup (CC/OD/Term Loans/Buyer’s Credit)
+125: Interest rates & interest charges
+126: Maturity profile (within 12 months vs >12 months)
+127: Lease Liabilities
+128: Vendor Finance
+129: LC Acceptances
+130: 8.3 Investments Dashboard
+131: Equity investments
+132: Mutual funds
+133: Inter-corporate deposits
+135: 9. Ageing Dashboards (Bill-wise & Due-date-wise)
+136: Receivables
+137: Payables
+138: Inventory
+139: Loan liabilities (PCFC / FBD)
+140: LC liabilities
+141: Advance ageing
+143: 10. Related Party Transactions (RPT)
+144: Monthly, Quarterly, Yearly comparisons
+145: Transaction-wise breakup
+146: Balances outstanding
+147: Compliance status (Section 188 / Reg 23)
+149: 11. Forex Management Dashboard
+150: Receivables (Export)
+151: Customer-wise / Currency-wise outstanding
+152: Realization tracking
+153: Open Sale Orders & Customer POs
+154: Hedging Dashboard
+155: Hedged vs Unhedged Exposure
+156: MTM Gain/Loss
+157: Exposure by Tenor
+158: Open Invoices
+159: Financed vs Unfinanced
+160: Unrealized export bills
+161: Shipping bill tracking
+162: PCFC & FBD Liabilities
+163: Due date-wise repayment
+164: Import Payables
+165: Open POs
+166: Hedging coverage
+167: Advances paid
+169: 12. Loans Dashboard
+170: ECB Loans – Currency wise
+171: Interest costs & due dates
+172: Hedging position for ECB/FCTL
+173: Covenant compliance status
+175: 13. Exception Reporting Dashboard
+176: Critical Alerts
+177: GR/IR Pending items (ageing)
+178: BRS pending entries
+179: Open Capital POs
+180: Open POs (all)
+181: Negative stock alerts
+182: Minimum Order Quantity not maintained
+183: Non-moving inventory
+184: Long pending advances
+185: Short-term maturity (within 12 months) of long-term debt
+186: Forex fluctuation alerts – hedge mismatch
+187: TDS / GST / PF / ESIC pending compliance alerts
+189: 14. Investor Relations Dashboard (Quarterly & Annual)
+190: Business Overview Charts
+191: Products & new product launches
+192: Client list & new client additions
+193: Export vs Domestic revenue share
+194: Financial Summary
+195: Net Sales, Other Income, Total Revenue
+196: COGS, GP, Employee Cost, Other Expenses
+197: EBITDA, EBIT, PBT, PAT
+198: Growth QoQ & YoY
+199: EPS Trends
+200: Balance Sheet Highlight
+201: Equity, Debt, Net Debt
+202: Cash & Bank, Investments
+203: Operational KPIs
+204: Capacity Utilization
+205: Sales quantity & value – product-wise and industry-wise
+207: 15. Compliance & Risk Management Dashboard
+208: Audit Trail Dashboard
+209: Segregation of Duties (SOD) violations
+210: Fraud detection alerts (pattern recognition)
+211: SAP Access Control Summary
+212: Statutory filings tracker (SEBI, MCA, GST, Income tax)
+213: Internal audit points – open & closed
+215: 16. Dashboard Features & User Controls
+216: Pictorial/Graphical charts for all KPIs
+217: Editable columns and customizable tabs
+218: Export options: Excel, PDF, PPT
+219: Real-time refresh via SAP BW/4HANA or SAC
+220: Mobile view enabled
+221: Drill down to GL / Cost Center / Document Level

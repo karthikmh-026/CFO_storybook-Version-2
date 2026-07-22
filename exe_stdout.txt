@@ -1,0 +1,13 @@
+INFO:     127.0.0.1:54242 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65467 - "GET /assets/index-Cd1g69XX.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54242 - "GET /assets/index-D5EG7xA8.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54242 - "GET /ajalabs-white.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65467 - "GET /pitti.png HTTP/1.1" 200 OK
+Database connection failed (connection to server at "192.168.1.53", port 5432 failed: timeout expired
+). Falling back to Offline mode using local Excel files.
+Failed to load Offline Connection: No module named 'pandas'
+INFO:     127.0.0.1:65468 - "GET /api/story HTTP/1.1" 500 Internal Server Error
+Database connection failed (connection to server at "192.168.1.53", port 5432 failed: timeout expired
+). Falling back to Offline mode using local Excel files.
+Failed to load Offline Connection: No module named 'pandas'
+INFO:     127.0.0.1:57323 - "GET /api/story HTTP/1.1" 500 Internal Server Error

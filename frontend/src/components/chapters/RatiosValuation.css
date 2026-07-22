@@ -1,0 +1,147 @@
+.rv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.rv-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.rv-card--highlight {
+  border-color: rgba(226, 73, 95, 0.35);
+  background: rgba(226, 73, 95, 0.06);
+}
+
+.rv-card__label {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rv-card__value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  margin-top: 8px;
+}
+
+.rv-card__delta {
+  font-size: 0.76rem;
+  margin-top: 8px;
+  color: var(--text-faint);
+}
+
+.rv-card__delta--up {
+  color: var(--positive);
+}
+
+.rv-card__delta--down {
+  color: var(--negative);
+}
+
+.rv-footer {
+  margin-top: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+
+.rv-footer__asof {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  color: var(--text-faint);
+}
+
+.rv-footer__hook {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--accent);
+  font-size: 1rem;
+}
+
+.rv__quarterly-section {
+  width: 100%;
+}
+
+.rv__quarterly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.rv__quarterly-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.rv__quarterly-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #e2725b; /* Coral/red accent for PAT */
+}
+
+.rv__quarterly-card--gm::before {
+  background: var(--accent); /* Gold/orange accent for Gross Margin */
+}
+
+.rv__quarterly-card--gm:hover {
+  border-color: rgba(217, 184, 114, 0.4);
+}
+
+.rv__quarterly-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(226, 73, 95, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.rv__quarterly-card-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.rv__quarterly-card-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.rv__quarterly-card-formula {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.rv__quarterly-card-value {
+  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.rv__quarterly-card-subvalue {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  margin-top: 4px;
+}

@@ -1,0 +1,50 @@
+.cash__visual {
+  width: 100%;
+}
+
+.ccc-bridge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ccc-block {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 20px;
+  text-align: center;
+  min-width: 110px;
+}
+
+.ccc-block--total {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.ccc-block__value {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+}
+
+.ccc-block__label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.ccc-op {
+  font-size: 1.4rem;
+  color: var(--text-faint);
+}
+
+.cash__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.cash__grid--three {
+  grid-template-columns: repeat(3, 1fr);
+}

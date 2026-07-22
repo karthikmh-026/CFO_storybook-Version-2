@@ -1,0 +1,17 @@
+.chapter--fixedassets .stat-card--highlight {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.chapter--fixedassets .chapter-deepdive {
+  display: inline-block;
+  margin-top: 24px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.chapter--fixedassets .chapter-deepdive:hover {
+  opacity: 0.8;
+}

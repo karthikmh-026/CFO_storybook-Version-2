@@ -1,0 +1,83 @@
+.pl__visual {
+  width: 100%;
+}
+
+.pl__quarterly-section {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.pl__quarterly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.pl__quarterly-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pl__quarterly-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+/* Color indicators for EBIT and EBITDA cards */
+.pl__quarterly-card:nth-child(odd)::before {
+  background: var(--accent); /* Gold/orange accent for EBIT */
+}
+
+.pl__quarterly-card:nth-child(even)::before {
+  background: #5fc9ac; /* Green/teal accent for EBITDA */
+}
+
+.pl__quarterly-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(217, 184, 114, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.pl__quarterly-card-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.pl__quarterly-card-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.pl__quarterly-card-formula {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.pl__quarterly-card-value {
+  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.pl__quarterly-card-subvalue {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  margin-top: 4px;
+}

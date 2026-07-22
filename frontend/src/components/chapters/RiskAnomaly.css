@@ -1,0 +1,29 @@
+.chapter--risk .eyebrow {
+  color: var(--risk);
+}
+
+.chapter--risk .hook,
+.chapter--risk .risk-score {
+  color: var(--risk);
+}
+
+.risk__grid,
+.risk__charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.risk-row-block {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.risk-row-block:last-child {
+  border-bottom: none;
+}
+
+.risk-row-block .risk-row {
+  border-bottom: none;
+  padding: 0;
+}

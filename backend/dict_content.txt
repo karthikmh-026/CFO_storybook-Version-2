@@ -1,0 +1,114 @@
+
+--- Sheet: KPI Dictionary ---
+Row 1: # | Domain (CFO Dashboard doc) | KPI / Line Item (per doc) | Status | Dashboard Label | Location in Dashboard | Notes
+Row 2: 1 | Executive Summary Dashboard | Revenue (MTD/QTD/YTD) – Consolidated & Standalone | Yes | Revenue MTD / QTD / YTD stat cards | Storybook Home > Executive Summary chapter | Consolidated = entity toggle 'ALL'; standalone via company-code toggle (1000/2000/3000/4000) in masthead
+Row 3: Executive Summary Dashboard | EBITDA, EBIT, PAT – Growth % (YoY / QoQ) | Yes | EBITDA / EBIT / PAT stat cards with YoY & QoQ badges | Storybook Home > Executive Summary chapter
+Row 4: Executive Summary Dashboard | Cash & Bank Balances | Yes | Cash & Bank stat card | Storybook Home > Executive Summary chapter
+Row 5: Executive Summary Dashboard | Net Debt Position | Yes | Net Debt stat card; also 'Net Debt' ratio row | Storybook Home > Executive Summary chapter; Ratios & Valuation chapter
+Row 6: Executive Summary Dashboard | Cash Conversion Cycle | Yes | Cash Conversion Cycle stat card (summary); full Inventory+Receivable-Payable Days build-up | Storybook Home > Executive Summary chapter (headline); Cash & Working Capital chapter (detail)
+Row 7: Executive Summary Dashboard | Working Capital Summary | Yes | Working Capital stat card (headline); Net Current Assets detail | Storybook Home > Executive Summary chapter; Deep Dive > Financial Statements (Net Current Assets)
+Row 8: Executive Summary Dashboard | Key Alerts/Exceptions (TDS due, negative stocks, overdue receivables, etc.) | Partial | Key Alerts ticker (DSO stretched, MSME payables due, Net debt up) | Storybook Home > Executive Summary chapter | Broader exception queue (GR/IR, BRS, negative stock, non-moving inventory) lives in Deep Dive > Risk instead of the alerts ticker
+Row 9: Executive Summary Dashboard | Quick Links to Drill-Down Reports | Yes | 'Deep Dive →' button on every chapter | Storybook Home (every chapter footer) | Links to /deepdive/:chapter
+Row 10: 2 | 2.1 Profit & Loss Statement | Comparative View: Monthly, Quarterly, Yearly | Partial | Quarterly P&L Trend chart (4 quarters: revenue/EBITDA/PAT) | Deep Dive > Financial Statements | Monthly and yearly views not built
+Row 11: 2.1 Profit & Loss Statement | Drill-down: Cost Center → GL → Transaction Level, PIVOT model | No | — | — | General ledger drill-down not built. Only the O2C rule-violation flow drills to transaction level (Violation Detail page)
+Row 12: 2.1 Profit & Loss Statement | KPIs: Revenue Growth, GM%, EBITDA%, EBIT%, PAT%, EPS | Partial | Margin Trend chart (GM%, EBITDA%, PAT% by quarter); EPS in Ratios | Storybook Home > Margin Story chapter (GM/EBITDA/PAT%); Ratios & Valuation chapter (EPS) | EBIT% not separately charted (EBIT ₹ value only)
+Row 13: 2.1 Profit & Loss Statement | Variance Analysis: Budget vs Actual, Forecast vs Actual | Partial | Budget vs Actual (Revenue); Budget vs Actual by expense line | Storybook Home > Margin Story chapter; Deep Dive > Expense Analytics | Forecast vs Actual not built
+Row 14: 2 | 2.2 Balance Sheet | Monthly/Quarterly/Annual Comparatives | No | — | —
+Row 15: 2.2 Balance Sheet | Drill down: Schedule-wise → GL → Line Item | No | — | —
+Row 16: 2.2 Balance Sheet | Net Worth, Total Debt, Capital Employed | Yes | Balance Sheet Snapshot stats (Net Worth, Total Debt, Capital Employed, Total Assets) | Deep Dive > Financial Statements
+Row 17: 2.2 Balance Sheet | Working Capital Snapshot | Yes | Net Current Assets stats (Current Assets, Current Liabilities, Net Current Assets) | Deep Dive > Working Capital & Treasury
+Row 18: 2 | 2.3 Cash Flow Statement | Operating, Investing, Financing Cash Flows | Yes | Cash Flow Statement, YTD stats | Deep Dive > Financial Statements
+Row 19: 2.3 Cash Flow Statement | Free Cash Flow | Yes | Free Cash Flow stat | Deep Dive > Financial Statements | Also carried in cashWorkingCapital payload (freeCashFlowCr) though not separately displayed on the homepage chapter
+Row 20: 2.3 Cash Flow Statement | Drill-down to GL & Document Level | No | — | —
+Row 21: 2 | 2.4 Funds Flow Statement | Sources & Uses of Funds | Yes | Funds Flow — Sources & Uses table | Deep Dive > Financial Statements
+Row 22: 2.4 Funds Flow Statement | Movement in Working Capital | Partial | 'Uses — Increase in working capital' row in Funds Flow table | Deep Dive > Financial Statements
+Row 23: 3 | Ratio Analysis – Liquidity | Current Ratio | Yes | Current Ratio metric card | Storybook Home > Ratios & Valuation chapter
+Row 24: Ratio Analysis – Liquidity | Quick Ratio | Yes | Quick Ratio metric card | Storybook Home > Ratios & Valuation chapter
+Row 25: Ratio Analysis – Liquidity | Cash Ratio | No | — | —
+Row 26: 3 | Ratio Analysis – Profitability | Gross Margin | Yes | GM% line, Margin Trend chart | Storybook Home > Margin Story chapter
+Row 27: Ratio Analysis – Profitability | EBITDA Margin | Yes | EBITDA% line, Margin Trend chart | Storybook Home > Margin Story chapter
+Row 28: Ratio Analysis – Profitability | EBIT Margin | No | — | — | EBIT shown as absolute ₹ value only, not as a margin %
+Row 29: Ratio Analysis – Profitability | ROE, ROCE | Yes | ROE and ROCE metric cards | Storybook Home > Ratios & Valuation chapter
+Row 30: Ratio Analysis – Profitability | ROA | No | — | —
+Row 31: 3 | Ratio Analysis – Efficiency | Inventory Days | Yes | Inventory Days (CCC build-up) | Storybook Home > Cash & Working Capital chapter
+Row 32: Ratio Analysis – Efficiency | Receivable Days | Yes | Receivable Days (CCC build-up); also DSO Trend chart | Storybook Home > Cash & Working Capital chapter
+Row 33: Ratio Analysis – Efficiency | Payable Days | Yes | Payable Days (CCC build-up) | Storybook Home > Cash & Working Capital chapter
+Row 34: Ratio Analysis – Efficiency | Asset Turnover | No | — | —
+Row 35: 3 | Ratio Analysis – Leverage | Debt-Equity Ratio | Yes | Debt / Equity metric card | Storybook Home > Ratios & Valuation chapter
+Row 36: Ratio Analysis – Leverage | Interest Coverage Ratio | Yes | Interest Coverage metric card; formula shown in Deep Dive | Storybook Home > Ratios & Valuation chapter; Deep Dive > Ratios & Investor Relations
+Row 37: Ratio Analysis – Leverage | Net Debt/EBITDA | Yes | Net Debt / EBITDA metric card + Covenant Headroom card | Storybook Home > Ratios & Valuation chapter
+Row 38: 3 | Ratio Analysis – Market Valuation | EPS, PE Ratio | Yes | EPS (TTM) and P/E metric cards; EPS Trend chart | Storybook Home > Ratios & Valuation chapter; Deep Dive > Ratios & Investor Relations
+Row 39: Ratio Analysis – Market Valuation | Book Value | Yes | Book Value / Share stat | Deep Dive > Ratios & Investor Relations
+Row 40: Ratio Analysis – Market Valuation | Market Cap | Yes | Market Cap metric card | Storybook Home > Ratios & Valuation chapter
+Row 41: Ratio Analysis – Market Valuation | EV/EBITDA | Yes | EV / EBITDA metric card | Storybook Home > Ratios & Valuation chapter
+Row 42: 4 | Sales Analytics Dashboard | Geo-wise: Export vs Domestic | Yes | Domestic 73% / Export 27% (value chain output stage); Geography Mix stats | Storybook Home > Value Chain chapter; Deep Dive > Sales Analytics
+Row 43: Sales Analytics Dashboard | Customer-wise / Customer Group-wise | Partial | Top-5 Customer Concentration stat only (sales side); full customer-wise risk list exists on the risk side | Deep Dive > Sales Analytics; Storybook Home > Risk & Anomaly chapter (customer risk, not sales)
+Row 44: Sales Analytics Dashboard | Industry Segment-wise | Yes | Sectors breakdown (Railways/Power/Industrial & Mining/Oil & Gas/Data Centers & Renewables) | Storybook Home > Value Chain chapter
+Row 45: Sales Analytics Dashboard | Product-wise | Yes | Revenue by Product Line table (with contribution margin %) | Deep Dive > Sales Analytics
+Row 46: Sales Analytics Dashboard | Entity-wise & Unit-wise | Partial | Entity / company-code toggle (ALL / 1000 / 2000 / 3000 / 4000) | Storybook Home masthead (applies group-wide) | Unit-wise breakdown not built
+Row 47: Sales Analytics Dashboard | Sales Quantity vs Value analysis | Partial | Tonnage + ₹ value shown per value-chain stage | Storybook Home > Value Chain chapter
+Row 48: Sales Analytics Dashboard | Contribution margin by product & customer | Partial | Contribution Margin % in Revenue by Product Line table | Deep Dive > Sales Analytics | By-customer contribution margin not built
+Row 49: Sales Analytics Dashboard | Open Sales Orders | Yes | Open Sales Orders stat; order book value on Value Chain chapter | Deep Dive > Sales Analytics; Storybook Home > Value Chain chapter
+Row 50: Sales Analytics Dashboard | Customer PO details | No | — | —
+Row 51: Sales Analytics Dashboard | Realization tracking | Partial | Export Realized On-Time stat | Deep Dive > Sales Analytics
+Row 52: 5 | Expense Analytics Dashboard | Expense Category Drill-down (RM, Employee, Finance Costs, Other, D&A) | Yes | Expense Break-up, YTD stats | Deep Dive > Expense Analytics
+Row 53: Expense Analytics Dashboard | Comparatives: Monthly/Quarterly/Yearly, entity & unit-wise | Partial | Expense as % of Revenue trend (3 quarters) | Deep Dive > Expense Analytics | Monthly/annual and unit-wise views not built
+Row 54: Expense Analytics Dashboard | Drill Down: Cost center → GL → Document → PO → GRN | No | — | —
+Row 55: 6 | 6.1 Net Current Assets Dashboard | Current Assets & Liabilities – full breakup | Yes | Net Current Assets stats | Deep Dive > Working Capital & Treasury
+Row 56: 6 | 6.2 Inventory Dashboard | Product-wise, Unit-wise Inventory / UOM, Qty, Rate, Value | No | — | — | Only bucket-wise inventory (Raw material/WIP/Finished/Slow-moving) is modeled, not product/unit/UOM level
+Row 57: 6.2 Inventory Dashboard | Ageing Analysis | Yes | Inventory Ageing chart | Storybook Home > Cash & Working Capital chapter
+Row 58: 6.2 Inventory Dashboard | Slow-moving, non-moving stock flags | Partial | 'Slow / non-moving' bucket; 'Non-Moving Inventory' exception row | Storybook Home > Cash & Working Capital chapter; Deep Dive > Exceptions & Compliance
+Row 59: 6 | 6.3 Receivables Dashboard | Export vs Domestic | No | — | — | AR ageing is not split by export/domestic
+Row 60: 6.3 Receivables Dashboard | Ageing: Invoice Date wise & Due Date wise | Yes | AR Ageing chart (DB-backed) | Storybook Home > Cash & Working Capital chapter
+Row 61: 6.3 Receivables Dashboard | Customer-wise outstanding | Yes | Customer Risk list (risk score, open AR, overdue) (DB-backed) | Storybook Home > Risk & Anomaly chapter
+Row 62: 6.3 Receivables Dashboard | Unrealized export proceeds | No | — | —
+Row 63: 6 | 6.4 Advances Dashboard | RM / Capital / Employee Advances, Ageing | Yes | Advances table (type, amount, ageing bucket) | Deep Dive > Working Capital & Treasury
+Row 64: 6 | 6.5 Payables Dashboard | Import vs Domestic | Yes | Payables Ageing chart (Domestic/Import buckets) | Storybook Home > Cash & Working Capital chapter
+Row 65: 6.5 Payables Dashboard | MSME identification | Yes | 'MSME due ≤45d' bucket; MSME vs non-MSME split | Storybook Home > Cash & Working Capital chapter
+Row 66: 6.5 Payables Dashboard | Due date-based ageing | Yes | Payables Ageing chart | Storybook Home > Cash & Working Capital chapter
+Row 67: 6 | 6.6 Other Current Liabilities & Provisions | Tax liabilities, Statutory dues, Accrued expenses | No | — | —
+Row 68: 7 | Fixed Assets Dashboard | Gross Block, Depreciation, Net Block, ROU Assets, Capital WIP, Asset costing, Depreciation reconciliation | No | — | — | No Fixed Assets module in the current data model
+Row 69: 8 | 8.1 Net Debt Summary | Total Borrowings, Cash & Bank/FD, Net Debt Movement | Yes | Net Debt Bridge (Gross Borrowings → Cash & Bank → Net Debt) | Storybook Home > Cash & Working Capital chapter | Month-wise movement trend not built
+Row 70: 8 | 8.2 Borrowings Dashboard | Loan-wise breakup (CC/OD/Term Loans/Buyer's Credit) | Yes | Borrowings Break-up table | Deep Dive > Working Capital & Treasury
+Row 71: 8.2 Borrowings Dashboard | Interest rates & interest charges | Yes | 'Rate' column in Borrowings table | Deep Dive > Working Capital & Treasury
+Row 72: 8.2 Borrowings Dashboard | Maturity profile (within/beyond 12 months) | Yes | Maturity Profile stats | Deep Dive > Working Capital & Treasury
+Row 73: 8.2 Borrowings Dashboard | Lease Liabilities, Vendor Finance, LC Acceptances | No | — | —
+Row 74: 8 | 8.3 Investments Dashboard | Equity investments, Mutual funds, Inter-corporate deposits | Yes | Mutual Funds / Inter-Corporate Deposits / Equity Investments stats | Deep Dive > Working Capital & Treasury
+Row 75: 9 | Ageing Dashboards | Receivables, Payables, Inventory ageing | Yes | AR Ageing / Payables Ageing / Inventory Ageing charts | Storybook Home > Cash & Working Capital chapter
+Row 76: Ageing Dashboards | Loan liabilities (PCFC/FBD), LC liabilities, Advance ageing | Partial | Advances table has an ageing bucket only | Deep Dive > Working Capital & Treasury | Loan / LC liability ageing specifically not built
+Row 77: 10 | Related Party Transactions (RPT) | Monthly/Quarterly/Yearly comparisons, Transaction-wise breakup | No | — | —
+Row 78: Related Party Transactions (RPT) | Balances outstanding, Compliance status (Sec 188 / Reg 23) | Yes | Related Party Transactions stats (RPT Value, Balances Outstanding, Section 188, Reg 23) | Deep Dive > Exceptions & Compliance | Summary level only, not transaction-wise
+Row 79: 11 | Forex Management Dashboard | Receivables (Export), Customer/Currency-wise, Realization, Open SOs/POs | Partial | Export Exposure stat only | Deep Dive > Exceptions & Compliance | Customer/currency-wise breakdown not built
+Row 80: Forex Management Dashboard | Hedging Dashboard: Hedged vs Unhedged, MTM Gain/Loss, Exposure by Tenor | Partial | Hedged % / Unhedged % / MTM Gain-Loss stats | Deep Dive > Exceptions & Compliance | Exposure-by-tenor breakdown not built
+Row 81: Forex Management Dashboard | Open Invoices, Financed vs Unfinanced, Unrealized export bills, Shipping bill tracking | No | — | —
+Row 82: Forex Management Dashboard | PCFC & FBD Liabilities, Import Payables, Open POs, Hedging coverage, Advances paid | No | — | —
+Row 83: 12 | Loans Dashboard | ECB Loans, Interest costs, Hedging position, Covenant compliance | Partial | General borrowings/covenant headroom covered under Ratios & Treasury; ECB not separately modeled | Storybook Home > Ratios & Valuation chapter (Covenant Headroom)
+Row 84: 13 | Exception Reporting Dashboard | GR/IR Pending, BRS pending, Open Capital POs, Open POs, Negative stock, MOQ, Non-moving inventory, Long pending advances | Yes | Exception Alerts table | Deep Dive > Exceptions & Compliance
+Row 85: Exception Reporting Dashboard | Short-term maturity of long-term debt | No | — | — | Maturity profile exists (Deep Dive > Working Capital) but not flagged as an exception
+Row 86: Exception Reporting Dashboard | Forex fluctuation alerts – hedge mismatch | Partial | Mentioned narratively in the Watch callout, not as a discrete alert row | Deep Dive > Exceptions & Compliance
+Row 87: Exception Reporting Dashboard | TDS / GST / PF / ESIC pending compliance alerts | Yes | Statutory & Compliance table | Deep Dive > Exceptions & Compliance
+Row 88: 14 | Investor Relations Dashboard | Business Overview Charts, Products/launches, Client list, Export vs Domestic share | Partial | Export Revenue Share stat only | Deep Dive > Ratios & Investor Relations | Business overview charts / product launches / client list not built
+Row 89: Investor Relations Dashboard | Financial Summary (Net Sales, EBITDA, PBT, PAT, Growth), EPS Trends | Yes | Covered by Executive Summary + EPS Trend chart | Storybook Home > Executive Summary chapter; Deep Dive > Ratios & Investor Relations
+Row 90: Investor Relations Dashboard | Balance Sheet Highlight (Equity, Debt, Net Debt, Cash & Bank, Investments) | Yes | Covered by Balance Sheet Snapshot + Net Debt Bridge | Deep Dive > Financial Statements; Storybook Home > Cash & Working Capital chapter
+Row 91: Investor Relations Dashboard | Operational KPIs: Capacity Utilization, Sales qty/value by product & industry | Yes | Capacity Utilization stat + trend; sector/product breakdowns | Storybook Home > Value Chain chapter; Deep Dive > Ratios & Investor Relations, Sales Analytics
+Row 92: 15 | Compliance & Risk Management Dashboard | Audit Trail Dashboard, SAP Access Control Summary | No | — | —
+Row 93: Compliance & Risk Management Dashboard | Segregation of Duties (SOD) violations | Yes | 'SOD Violations' row | Deep Dive > Exceptions & Compliance
+Row 94: Compliance & Risk Management Dashboard | Fraud detection alerts (pattern recognition) | Yes | Rule Violations engine (credit breach, duplicate invoice, tax variance, severity chips) + Customer Risk narrative flags (DB-backed); transaction-level drill-down | Storybook Home > Risk & Anomaly chapter; /violation/:id detail page
+Row 95: Compliance & Risk Management Dashboard | Statutory filings tracker (SEBI, MCA, GST, Income tax) | Yes | Statutory & Compliance table | Deep Dive > Exceptions & Compliance
+Row 96: Compliance & Risk Management Dashboard | Internal audit points – open & closed | Yes | 'Internal Audit Points' row | Deep Dive > Exceptions & Compliance
+Row 97: 16 | Dashboard Features & User Controls | Pictorial/Graphical charts for all KPIs | Yes | Recharts throughout: waterfall bridge, trend lines, Sankey flow, ageing bars | Whole app
+Row 98: Dashboard Features & User Controls | Editable columns and customizable tabs | No | — | —
+Row 99: Dashboard Features & User Controls | Export options: Excel, PDF, PPT | No | — | —
+Row 100: Dashboard Features & User Controls | Real-time refresh via SAP BW/4HANA or SAC | No | — | — | Data is hardcoded/seeded demo constants served by FastAPI + Postgres; no live SAP connector yet
+Row 101: Dashboard Features & User Controls | Mobile view enabled | No | — | — | App has a 1024px minimum width; not mobile-optimized by design
+Row 102: Dashboard Features & User Controls | Drill down to GL / Cost Center / Document Level | Partial | Rule-violation drill-down to transaction level exists | /violation/:id detail page | General GL/cost-center drill-down not built
+
+--- Sheet: Summary ---
+Row 1: CFO Storybook — KPI Coverage Summary
+Row 3: Source doc: | CFO Dashboard.docx (16 domains)
+Row 4: Dashboard: | Pitti Group CFO Storybook (localhost:5173) + Deep Dive pages
+Row 6: Status | Count | % of line items
+Row 7: Yes | 57 | 0.5643564356435643
+Row 8: Partial | 19 | 0.1881188118811881
+Row 9: No | 25 | 0.2475247524752475
+Row 10: Total line items | 101

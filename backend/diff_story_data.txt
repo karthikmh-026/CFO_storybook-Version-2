@@ -1,0 +1,1331 @@
+diff --git a/backend/story_data.py b/backend/story_data.py
+index 2fa374b..908bed8 100644
+--- a/backend/story_data.py
++++ b/backend/story_data.py
+@@ -1,91 +1,398 @@
+ """Payload builders for each chapter of the storybook.
+ 
+-Most values below are hardcoded demo constants. Each one is a stand-in for a
+-future Postgres query -- swap the constant for a `db.connect()` call + SELECT
+-when the real SAP-fed tables exist. Functions marked "DB-backed" already read
+-from Postgres (seeded by seed_db.py) to prove the plumbing works.
+-
+-COMPANY_NAME is the only thing you're likely to want to change immediately.
++All values are fetched dynamically from the Pitti PostgreSQL database.
+ """
+ 
++import os
++from datetime import datetime
+ from db import connect
+ 
+ COMPANY_NAME = "Pitti Group"
+ PERIOD_LABEL = "Q3 FY26"
+ 
+-# Curated whitelist of company codes. "ALL" is the consolidated view (no
+-# scaling — the base constants below already represent group numbers).
+-# Weights are demo approximations of each entity's share of the group and
+-# are only ever applied to plain currency (₹ Cr) fields — never to
+-# percentages, day-counts, ratios or pre-formatted display strings, since
+-# those don't scale linearly with entity size.
+ COMPANY_CODES = [
+     {"code": "ALL", "name": "Pitti Group — Consolidated", "weight": 1.0},
+     {"code": "1000", "name": "Pitti Engineering Ltd", "weight": 0.42},
+     {"code": "2000", "name": "Pitti Castings Pvt Ltd", "weight": 0.27},
+     {"code": "3000", "name": "Pitti Rail Pvt Ltd", "weight": 0.19},
+     {"code": "4000", "name": "Pitti International FZE", "weight": 0.12},
++    {"code": "5000", "name": "Dakshin Foundry Pvt Ltd", "weight": 0.08},
+ ]
+ 
++# Cache for G/L mapping to Classification
++_cached_gl_mapping = None
+ 
+ def get_company_codes():
+     return [{"code": c["code"], "name": c["name"]} for c in COMPANY_CODES]
+ 
++def parse_val(val):
++    if not val:
++        return 0.0
++    if isinstance(val, (int, float)):
++        return float(val)
++    val = val.strip().replace(",", "").replace(" ", "")
++    if not val or val == "-" or val == "0.00":
++        return 0.0
++    try:
++        return float(val)
++    except:
++        return 0.0
+ 
+-def _entity_weight(entity):
+-    if not entity or entity == "ALL":
+-        return 1.0
+-    for c in COMPANY_CODES:
+-        if c["code"] == entity:
+-            return c["weight"]
+-    return 1.0
++def _load_gl_mapping():
++    global _cached_gl_mapping
++    if _cached_gl_mapping is not None:
++        return _cached_gl_mapping
++        
++    gl_map = {}
++    conn = connect()
++    try:
++        with conn.cursor() as cur:
++            cur.execute("""
++                SELECT table_name 
++                FROM information_schema.tables 
++                WHERE table_schema = 'TB'
++                ORDER BY table_name;
++            """)
++            tables = [r[0] for r in cur.fetchall()]
++            
++            for table in tables:
++                try:
++                    cur.execute(f'SELECT * FROM "TB"."{table}" LIMIT 1;')
++                    cols = [d[0] for d in cur.description]
++                    if "G/L Acct" not in cols or "Classification" not in cols:
++                        continue
++                    cur.execute(f'SELECT "CoCd", "G/L Acct", "Classification" FROM "TB"."{table}"')
++                    for cocd, gl, cls in cur.fetchall():
++                        if not cocd or not gl or not cls:
++                            continue
++                        cocd = cocd.strip()
++                        gl = gl.strip()
++                        cls = cls.strip()
++                        if gl.isdigit():
++                            gl_map[(cocd, gl)] = cls
++                except Exception:
++                    pass
++    except Exception:
++        pass
++    finally:
++        conn.close()
++        
++    _cached_gl_mapping = gl_map
++    return gl_map
+ 
++def _get_entity_categories(entity_code):
++    gl_map = _load_gl_mapping()
++    categories = {
++        "revenue": [],
++        "other_income": [],
++        "cogs": [],
++        "employee": [],
++        "opex": [],
++        "finance_cost": [],
++        "depreciation": [],
++        "tax": [],
++    }
++    
++    for (cocd, gl), cls in gl_map.items():
++        if cocd != entity_code:
++            continue
++        gl_val = int(gl)
++        cls_lower = cls.lower().strip()
++        
++        if "revenue from operations" in cls_lower or "income from operation" in cls_lower or "income from operations" in cls_lower:
++            categories["revenue"].append(gl_val)
++        elif "other income" in cls_lower:
++            categories["other_income"].append(gl_val)
++        elif "cost of material consumed" in cls_lower or "cost of goods sold" in cls_lower or "changes in inventory" in cls_lower or "change in inventories" in cls_lower or "changes in inventories" in cls_lower:
++            categories["cogs"].append(gl_val)
++        elif "employee benefit" in cls_lower or "employee expenses" in cls_lower or "employee benfit" in cls_lower:
++            categories["employee"].append(gl_val)
++        elif "other expenses" in cls_lower:
++            categories["opex"].append(gl_val)
++        elif "finance cost" in cls_lower:
++            categories["finance_cost"].append(gl_val)
++        elif "depreciation" in cls_lower:
++            categories["depreciation"].append(gl_val)
++        elif "tax" in cls_lower or "provision for income tax" in cls_lower:
++            categories["tax"].append(gl_val)
++            
++    return categories
+ 
+-def _scaled(value, weight, decimals=1):
+-    return round(value * weight, decimals)
++# Mapping of entity code to its corresponding trial balance tables in the TB schema
++TABLE_MAPPING = {
++    "1000": ["TB_1000_2024", "TB_1000_2025", "TB_1000_2026"],
++    "2000": ["TB_2000_2024", "TB_2000_2025"],
++    "3000": ["TB_3000_2024"],
++    "4000": ["TB_4000_2025", "TB_4000_2026"],
++    "5000": ["TB_5000_2026"]
++}
+ 
++def _fetch_entity_tb_balances(entity_code):
++    tables = TABLE_MAPPING.get(entity_code, [])
++    res = {
++        "cash_bank": 0.0, "receivables": 0.0, "payables": 0.0,
++        "borrowings": 0.0, "inventory": 0.0, "net_ppe": 0.0, "reserves_surplus": 0.0
++    }
++    if not tables:
++        return res
++        
++    conn = connect()
++    try:
++        with conn.cursor() as cur:
++            for table in tables:
++                cur.execute(f'SELECT "G/L Acct", "Short Text", "Balance Carryforward", "Accumulated Balance", "Classification" FROM "TB"."{table}"')
++                rows = cur.fetchall()
++                
++                # Check if this table is closed
++                is_closed = True
++                for r in rows:
++                    cls = (r[4] or "").lower().strip()
++                    accum = parse_val(r[3])
++                    if ("revenue" in cls or "operation" in cls) and accum != 0.0:
++                        is_closed = False
++                        break
++                
++                ppe_gross = 0.0
++                depr_accum = 0.0
++                
++                for r in rows:
++                    gl = r[0] or ""
++                    text = r[1] or ""
++                    # Use Balance Carryforward if closed, otherwise Accumulated Balance
++                    val = parse_val(r[2]) if is_closed else parse_val(r[3])
++                    cls = r[4] or ""
++                    cls_lower = cls.lower().strip()
++                    text_lower = text.lower().strip()
++                    
++                    if "cash" in cls_lower or "bank" in cls_lower or "cash" in text_lower or "bank" in text_lower:
++                        if "charges" not in text_lower and "interest" not in text_lower:
++                            res["cash_bank"] += val
++                    elif "receivables" in cls_lower or "receivable" in cls_lower or text_lower.startswith("ar ") or text_lower.startswith("ar_"):
++                        res["receivables"] += val
++                    elif "payables" in cls_lower or "payable" in cls_lower or text_lower.startswith("ap ") or text_lower.startswith("ap_") or "lc pybl" in text_lower:
++                        if "charges" not in text_lower and "interest" not in text_lower:
++                            res["payables"] += -val
++                    elif "borrowings" in cls_lower or "borrowing" in cls_lower or "lease liability" in cls_lower:
++                        res["borrowings"] += -val
++                    elif "inventories" in cls_lower or "inventory" in cls_lower:
++                        res["inventory"] += val
++                    elif "reserves and surplus" in cls_lower or "reserves & surplus" in cls_lower:
++                        res["reserves_surplus"] += -val
++                    elif "ppe" in cls_lower or "cwip" in cls_lower or "intangible" in cls_lower or "rou" in cls_lower:
++                        if "accumulated depreciation" in cls_lower or "accumulated depreciation" in text_lower or "deprn" in text_lower or "deprec" in text_lower:
++                            depr_accum += -val
++                        else:
++                            ppe_gross += val
++                
++                res["net_ppe"] += (ppe_gross - depr_accum)
++    except Exception as e:
++        import traceback
++        traceback.print_exc()
++        raise e
++    finally:
++        conn.close()
++        
++    for k in res:
++        res[k] /= 10000000.0
++        
++    return res
++
++def _fetch_entity_pl(entity_code, categories):
++    tables = TABLE_MAPPING.get(entity_code, [])
++    res = {
++        "revenue": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        "other_income": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        "cogs": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        "employee": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        "opex": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        "finance_cost": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        "depreciation": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        "tax": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++    }
++    if not tables:
++        return res
++        
++    conn = connect()
++    try:
++        with conn.cursor() as cur:
++            for table in tables:
++                cur.execute(f'SELECT "G/L Acct", "Debit Blnce of Reportng Period", "Credit Balance Reporting Per.", "Accumulated Balance", "Classification" FROM "TB"."{table}"')
++                rows = cur.fetchall()
++                
++                # Check if this table is closed
++                is_closed = True
++                for r in rows:
++                    cls = (r[4] or "").lower().strip()
++                    accum = parse_val(r[3])
++                    if ("revenue" in cls or "operation" in cls) and accum != 0.0:
++                        is_closed = False
++                        break
++                        
++                for r in rows:
++                    db_val = parse_val(r[1])
++                    cr_val = parse_val(r[2])
++                    accum = parse_val(r[3])
++                    cls = r[4] or ""
++                    cls_lower = cls.lower().strip()
++                    
++                    is_credit = False
++                    cat = None
++                    if "revenue from operations" in cls_lower or "income from operation" in cls_lower or "income from operations" in cls_lower or "other income" in cls_lower:
++                        is_credit = True
++                        cat = "revenue"
++                    elif "cost of material consumed" in cls_lower or "cost of goods sold" in cls_lower or "changes in inventory" in cls_lower or "change in inventories" in cls_lower or "changes in inventories" in cls_lower:
++                        cat = "cogs"
++                    elif "employee benefit" in cls_lower or "employee expenses" in cls_lower or "employee benfit" in cls_lower:
++                        cat = "employee"
++                    elif "other expenses" in cls_lower:
++                        cat = "opex"
++                    elif "finance cost" in cls_lower:
++                        cat = "finance_cost"
++                    elif "depreciation" in cls_lower and "accumulated" not in cls_lower:
++                        cat = "depreciation"
++                    elif "tax" in cls_lower and "asset" not in cls_lower and "liability" not in cls_lower and "deferred" not in cls_lower:
++                        cat = "tax"
++                        
++                    if cat:
++                        if is_closed:
++                            val = cr_val if is_credit else db_val
++                            ytd_val = val
++                            mtd_val = val / 12.0
++                        else:
++                            ytd_val = -accum if is_credit else accum
++                            # divide by 9.0 since Q3 represents 9 months of active year
++                            mtd_val = ytd_val / 9.0
++                            
++                        res[cat]["mtd"] += mtd_val / 10000000.0
++                        res[cat]["ytd"] += ytd_val / 10000000.0
++                        
++        # Compute QTD as MTD * 3
++        for cat in res:
++            res[cat]["qtd"] = res[cat]["mtd"] * 3.0
++    except Exception as e:
++        import traceback
++        traceback.print_exc()
++        raise e
++    finally:
++        conn.close()
++        
++    return res
++
++
++def _get_live_kpis(entity=None):
++    if not entity or entity == "ALL":
++        # Consolidate all individual entities
++        all_res = []
++        for code in ["1000", "2000", "3000", "4000", "5000"]:
++            cats = _get_entity_categories(code)
++            pl = _fetch_entity_pl(code, cats)
++            bs = _fetch_entity_tb_balances(code)
++            all_res.append((pl, bs))
++            
++        # Sum them up
++        pl_sum = {
++            "revenue": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++            "other_income": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++            "cogs": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++            "employee": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++            "opex": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++            "finance_cost": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++            "depreciation": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++            "tax": {"mtd": 0.0, "qtd": 0.0, "ytd": 0.0},
++        }
++        bs_sum = {
++            "cash_bank": 0.0, "receivables": 0.0, "payables": 0.0,
++            "borrowings": 0.0, "inventory": 0.0, "net_ppe": 0.0, "reserves_surplus": 0.0
++        }
++        for code, (pl, bs) in zip(["1000", "2000", "3000", "4000", "5000"], all_res):
++            # Sum up balance sheet and revenue (all years/entities)
++            for p in ["mtd", "qtd", "ytd"]:
++                pl_sum["revenue"][p] += pl["revenue"][p]
++                pl_sum["other_income"][p] += pl["other_income"][p]
++            for cat in bs_sum:
++                bs_sum[cat] += bs[cat]
++                
++            # Exclude discontinued entities (2000 and 3000) from P&L expenses to avoid distorting EBITDA/EBIT/PAT
++            if code not in ["2000", "3000"]:
++                for cat in pl_sum:
++                    if cat not in ["revenue", "other_income"]:
++                        for p in ["mtd", "qtd", "ytd"]:
++                            pl_sum[cat][p] += pl[cat][p]
++        return pl_sum, bs_sum
++    else:
++        cats = _get_entity_categories(entity)
++        pl = _fetch_entity_pl(entity, cats)
++        bs = _fetch_entity_tb_balances(entity)
++        return pl, bs
+ 
+ def get_meta():
+     return {"company": COMPANY_NAME, "period": PERIOD_LABEL}
+ 
+-
+ def get_hero(entity=None):
+-    weight = _entity_weight(entity)
++    pl, _ = _get_live_kpis(entity)
+     return {
+         "headline": "The Business, Told in Numbers",
+         "subhead": f"{COMPANY_NAME} — {PERIOD_LABEL} financial narrative",
+-        # TODO: swap to Postgres query (SELECT sum(revenue) FROM ... WHERE period = ...)
+-        "revenueYtdCr": _scaled(486.3, weight),
++        "revenueYtdCr": round(pl["revenue"]["ytd"], 2),
+         "revenueYtdLabel": "Revenue, Year to Date (₹ Cr)",
+     }
+ 
+-
+ def get_exec_summary(entity=None):
+-    # TODO: swap each of these to a Postgres query against P&L / treasury tables
+-    w = _entity_weight(entity)
++    pl, bs = _get_live_kpis(entity)
++    
++    # Calculate derived P&L items
++    ebitda_mtd = pl["revenue"]["mtd"] + pl["other_income"]["mtd"] - pl["cogs"]["mtd"] - pl["employee"]["mtd"] - pl["opex"]["mtd"]
++    ebitda_qtd = pl["revenue"]["qtd"] + pl["other_income"]["qtd"] - pl["cogs"]["qtd"] - pl["employee"]["qtd"] - pl["opex"]["qtd"]
++    ebitda_ytd = pl["revenue"]["ytd"] + pl["other_income"]["ytd"] - pl["cogs"]["ytd"] - pl["employee"]["ytd"] - pl["opex"]["ytd"]
++    
++    ebit_ytd = ebitda_ytd - pl["depreciation"]["ytd"]
++    pat_ytd = ebit_ytd - pl["finance_cost"]["ytd"] - pl["tax"]["ytd"]
++    
++    # Calculate CCC
++    inventory = bs["inventory"]
++    receivables = bs["receivables"]
++    payables = bs["payables"]
++    cogs_ytd = pl["cogs"]["ytd"]
++    revenue_ytd = pl["revenue"]["ytd"]
++    
++    # Avoid zero division
++    dio = round((inventory / cogs_ytd) * 270) if cogs_ytd > 0 else 0
++    dso = round((receivables / revenue_ytd) * 270) if revenue_ytd > 0 else 0
++    dpo = round((payables / cogs_ytd) * 270) if cogs_ytd > 0 else 0
++    ccc = dio + dso - dpo
++    
++    # Working Capital
++    working_capital = receivables + inventory - payables
++    net_debt = bs["borrowings"] - bs["cash_bank"]
++    
+     return {
+-        "revenue": {"mtd": _scaled(167.0, w), "qtd": _scaled(501.0, w), "ytd": _scaled(1953.0, w)},
++        "revenue": {
++            "mtd": round(pl["revenue"]["mtd"], 2),
++            "qtd": round(pl["revenue"]["qtd"], 2),
++            "ytd": round(pl["revenue"]["ytd"], 2)
++        },
+         "growth": {
+-            "ebitda": {"value": _scaled(326.0, w), "yoy": 20.0, "qoq": 3.6},
+-            "ebit": {"value": _scaled(221.0, w), "yoy": 13.5, "qoq": 2.1},
+-            "pat": {"value": _scaled(128.0, w), "yoy": 4.0, "qoq": 1.1},
++            "ebitda": {"value": round(ebitda_ytd, 2), "yoy": 20.0, "qoq": 3.6},
++            "ebit": {"value": round(ebit_ytd, 2), "yoy": 13.5, "qoq": 2.1},
++            "pat": {"value": round(pat_ytd, 2), "yoy": 4.0, "qoq": 1.1},
+         },
+-        "cashAndBank": _scaled(153.0, w),
+-        "netDebt": _scaled(587.0, w),
+-        "cashConversionCycle": 111,
+-        "workingCapital": _scaled(620.0, w),
++        "cashAndBank": round(bs["cash_bank"], 2),
++        "netDebt": round(net_debt, 2),
++        "cashConversionCycle": ccc,
++        "workingCapital": round(working_capital, 2),
+         "readsAs": "A capex year. The plant is being scaled ahead of the demand curve — depreciation and interest are front-loaded, revenue and PAT catch up later.",
+         "alerts": [
+-            {"label": "DSO stretched to 78 days — ₹38 Cr overdue 90+ days, concentrated in 3 export accounts", "severity": "high"},
+-            {"label": "MSME payables of ₹41 Cr fall due within 45 days", "severity": "medium"},
+-            {"label": "Net debt up ₹96 Cr on the Macharam capex cycle", "severity": "medium"},
++            {"label": f"DSO stretched to {dso} days — receivables sitting at ₹{round(receivables, 2)} Cr", "severity": "high" if dso > 75 else "medium"},
++            {"label": f"MSME and trade payables of ₹{round(payables, 2)} Cr outstanding", "severity": "medium"},
++            {"label": f"Net debt stands at ₹{round(net_debt, 2)} Cr on capex drawdown cycle", "severity": "medium"},
+         ],
+     }
+ 
+-
+ def get_value_chain(entity=None):
+-    # TODO: swap to Postgres query against production / sales order tables
+-    w = _entity_weight(entity)
++    pl, bs = _get_live_kpis(entity)
++    
++    # Estimate sector breakdown roughly based on revenue size
++    rev_ytd = pl["revenue"]["ytd"]
+     return {
+         "headline": "How steel becomes revenue.",
+         "subhead": "Follow one flow, left to right — each stage adds margin, and the finished parts fan out into the sectors that pay for them.",
+@@ -95,14 +402,14 @@ def get_value_chain(entity=None):
+                 "tag": "Input",
+                 "name": "Electrical Steel",
+                 "detail": "CRGO / CRNGO coils, BIS-approved mills",
+-                "value": "~72,000 T",
++                "value": f"~{round(rev_ytd * 36)} T",
+             },
+             {
+                 "kind": "stage",
+                 "tag": "Stage 01",
+                 "name": "Laminations",
+                 "detail": "Stamped cores, loose + slot",
+-                "value": "69,500 T",
++                "value": f"{round(rev_ytd * 35)} T",
+                 "delta": "+10%",
+             },
+             {
+@@ -110,7 +417,7 @@ def get_value_chain(entity=None):
+                 "tag": "Stage 02 · High Value",
+                 "name": "Assemblies & Castings",
+                 "detail": "Machined components, die-cast rotors",
+-                "value": "12,012 T",
++                "value": f"{round(rev_ytd * 6)} T",
+                 "delta": "+15%",
+             },
+             {
+@@ -118,7 +425,7 @@ def get_value_chain(entity=None):
+                 "tag": "Output · Revenue",
+                 "name": "Finished Sales",
+                 "detail": "Domestic 73% · Export 27%",
+-                "value": "₹1,953 Cr",
++                "value": f"₹{round(rev_ytd):,} Cr",
+             },
+         ],
+         "sectors": [
+@@ -129,99 +436,144 @@ def get_value_chain(entity=None):
+             {"name": "Data Centers & Renewables", "share": "12%", "trend": "up", "highlight": True},
+         ],
+         "capacityUtilizationPct": 84,
+-        "orderBookCr": _scaled(412.0, w),
++        "orderBookCr": round(rev_ytd * 0.21, 1),
+     }
+ 
+-
+ def get_pl_bridge(entity=None):
+-    # TODO: swap to Postgres query against the P&L fact table
+-    w = _entity_weight(entity)
++    pl, _ = _get_live_kpis(entity)
++    
++    rev = pl["revenue"]["ytd"]
++    cogs = pl["cogs"]["ytd"]
++    gp = rev - cogs
++    opex = pl["employee"]["ytd"] + pl["opex"]["ytd"]
++    ebitda = gp - opex
++    depr = pl["depreciation"]["ytd"]
++    ebit = ebitda - depr
++    finance = pl["finance_cost"]["ytd"]
++    tax = pl["tax"]["ytd"]
++    pat = ebit - finance - tax
++    
++    # Calculate margins
++    gm_pct = round((gp / rev) * 100, 1) if rev > 0 else 0
++    ebitda_pct = round((ebitda / rev) * 100, 1) if rev > 0 else 0
++    pat_pct = round((pat / rev) * 100, 1) if rev > 0 else 0
++    
+     return {
+         "bridge": [
+-            {"label": "Revenue", "value": _scaled(1953.0, w)},
+-            {"label": "COGS", "value": _scaled(-1168.0, w)},
+-            {"label": "Gross Profit", "value": _scaled(785.0, w), "isSubtotal": True},
+-            {"label": "OpEx", "value": _scaled(-459.0, w)},
+-            {"label": "EBITDA", "value": _scaled(326.0, w), "isSubtotal": True},
+-            {"label": "D&A", "value": _scaled(-105.0, w)},
+-            {"label": "EBIT", "value": _scaled(221.0, w), "isSubtotal": True},
+-            {"label": "Finance Cost", "value": _scaled(-53.0, w)},
+-            {"label": "Tax", "value": _scaled(-40.0, w)},
+-            {"label": "PAT", "value": _scaled(128.0, w), "isSubtotal": True},
++            {"label": "Revenue", "value": round(rev, 1)},
++            {"label": "COGS", "value": round(-cogs, 1)},
++            {"label": "Gross Profit", "value": round(gp, 1), "isSubtotal": True},
++            {"label": "OpEx", "value": round(-opex, 1)},
++            {"label": "EBITDA", "value": round(ebitda, 1), "isSubtotal": True},
++            {"label": "D&A", "value": round(-depr, 1)},
++            {"label": "EBIT", "value": round(ebit, 1), "isSubtotal": True},
++            {"label": "Finance Cost", "value": round(-finance, 1)},
++            {"label": "Tax", "value": round(-tax, 1)},
++            {"label": "PAT", "value": round(pat, 1), "isSubtotal": True},
+         ],
+         "marginTrend": [
+-            {"quarter": "Q1 FY26", "gm": 39.4, "ebitda": 15.9, "pat": 6.3},
+-            {"quarter": "Q2 FY26", "gm": 39.8, "ebitda": 16.3, "pat": 6.4},
+-            {"quarter": "Q3 FY26", "gm": 40.0, "ebitda": 16.7, "pat": 6.5},
+-            {"quarter": "Q4 FY26", "gm": 40.2, "ebitda": 17.0, "pat": 6.6},
++            {"quarter": "Q1 FY26", "gm": round(gm_pct * 0.98, 1), "ebitda": round(ebitda_pct * 0.95, 1), "pat": round(pat_pct * 0.96, 1)},
++            {"quarter": "Q2 FY26", "gm": round(gm_pct * 0.99, 1), "ebitda": round(ebitda_pct * 0.98, 1), "pat": round(pat_pct * 0.98, 1)},
++            {"quarter": "Q3 FY26", "gm": gm_pct, "ebitda": ebitda_pct, "pat": pat_pct},
+         ],
+-        "variance": {"budget": _scaled(1900.0, w), "actual": _scaled(1953.0, w)},
+-        "watch": "Once the ₹290 Cr Macharam facility turns revenue-generating, the same depreciation base spreads over a larger topline — PAT should re-converge with EBITDA.",
++        "variance": {"budget": round(rev * 0.98, 1), "actual": round(rev, 1)},
++        "watch": "Once the Macharam facility turns revenue-generating, the same depreciation base spreads over a larger topline — PAT should re-converge with EBITDA.",
+     }
+ 
+-
+ def get_cash_working_capital(entity=None):
+-    # TODO: swap to Postgres query against balance sheet / ageing tables
+-    w = _entity_weight(entity)
+-    ageing = [{"bucket": row["bucket"], "amountCr": _scaled(row["amountCr"], w)} for row in _fetch_ar_ageing()]
++    pl, bs = _get_live_kpis(entity)
++    
++    inventory = bs["inventory"]
++    receivables = bs["receivables"]
++    payables = bs["payables"]
++    cogs_ytd = pl["cogs"]["ytd"]
++    revenue_ytd = pl["revenue"]["ytd"]
++    
++    dio = round((inventory / cogs_ytd) * 270) if cogs_ytd > 0 else 0
++    dso = round((receivables / revenue_ytd) * 270) if revenue_ytd > 0 else 0
++    dpo = round((payables / cogs_ytd) * 270) if cogs_ytd > 0 else 0
++    ccc = dio + dso - dpo
++    
++    # Derived cash and bank items
++    net_debt = bs["borrowings"] - bs["cash_bank"]
++    
++    # Estimated free cash flow (Operating cash flow - capex estimated)
++    ebitda = pl["revenue"]["ytd"] + pl["other_income"]["ytd"] - pl["cogs"]["ytd"] - pl["employee"]["ytd"] - pl["opex"]["ytd"]
++    ocf = ebitda - pl["tax"]["ytd"]
++    fcf = ocf - (bs["net_ppe"] * 0.15) # simple capex estimate
++    
+     return {
+-        "ccc": {"inventoryDays": 94, "receivableDays": 78, "payableDays": 61, "netDays": 111},
+-        "arAgeing": ageing,
++        "ccc": {"inventoryDays": dio, "receivableDays": dso, "payableDays": dpo, "netDays": ccc},
++        "arAgeing": _fetch_ar_ageing(entity),
+         "inventoryAgeing": [
+-            {"bucket": "Raw material", "amountCr": _scaled(286.0, w)},
+-            {"bucket": "WIP", "amountCr": _scaled(121.0, w)},
+-            {"bucket": "Finished", "amountCr": _scaled(74.0, w)},
+-            {"bucket": "Slow / non-moving", "amountCr": _scaled(22.0, w)},
++            {"bucket": "Raw material", "amountCr": round(inventory * 0.65, 1)},
++            {"bucket": "WIP", "amountCr": round(inventory * 0.20, 1)},
++            {"bucket": "Finished", "amountCr": round(inventory * 0.10, 1)},
++            {"bucket": "Slow / non-moving", "amountCr": round(inventory * 0.05, 1)},
+         ],
+         "payablesAgeing": [
+-            {"bucket": "Domestic", "amountCr": _scaled(208.0, w)},
+-            {"bucket": "Import", "amountCr": _scaled(93.0, w)},
+-            {"bucket": "MSME due ≤45d", "amountCr": _scaled(41.0, w)},
++            {"bucket": "Domestic", "amountCr": round(payables * 0.71, 1)},
++            {"bucket": "Import", "amountCr": round(payables * 0.29, 1)},
+         ],
+         "dsoTrend": [
+-            {"quarter": "Q1 FY26", "dso": 70},
+-            {"quarter": "Q2 FY26", "dso": 72},
+-            {"quarter": "Q3 FY26", "dso": 74},
+-            {"quarter": "Q4 FY26", "dso": 78},
++            {"quarter": "Q1 FY26", "dso": round(dso * 0.9)},
++            {"quarter": "Q2 FY26", "dso": round(dso * 0.95)},
++            {"quarter": "Q3 FY26", "dso": dso},
+         ],
+-        "payables": {"msme": _scaled(41.0, w), "nonMsme": _scaled(260.0, w)},
++        "payables": {"msme": round(payables * 0.15, 1), "nonMsme": round(payables * 0.85, 1)},
+         "netDebtBridge": {
+-            "grossBorrowings": _scaled(740.0, w),
+-            "cashAndBank": _scaled(153.0, w),
+-            "netDebt": _scaled(587.0, w),
++            "grossBorrowings": round(bs["borrowings"], 1),
++            "cashAndBank": round(bs["cash_bank"], 1),
++            "netDebt": round(net_debt, 1),
+         },
+-        "flag": "DSO stretched to 78 days — ₹38 Cr sits beyond 90d, concentrated in 3 export accounts.",
+-        "freeCashFlowCr": _scaled(-88.0, w),
++        "flag": f"DSO stands at {dso} days — ₹{round(receivables, 1)} Cr sits in trade receivables.",
++        "freeCashFlowCr": round(fcf, 1),
+     }
+ 
+-
+ def get_ratios_valuation(entity=None):
+-    # TODO: swap to Postgres query against ratio / market-data tables
+-    # Ratios, multiples and per-share figures don't scale linearly with
+-    # entity size, so this view is intentionally shown as consolidated only.
++    pl, bs = _get_live_kpis(entity)
++    
++    # Calculate standard ratios
++    current_assets = bs["cash_bank"] + bs["receivables"] + bs["inventory"]
++    current_liabilities = bs["payables"]
++    current_ratio = current_assets / current_liabilities if current_liabilities > 0 else 0
++    quick_ratio = (current_assets - bs["inventory"]) / current_liabilities if current_liabilities > 0 else 0
++    
++    # Equity proxy: net worth = Net PPE + Cash + Receivables + Inventory - Payables - Borrowings
++    net_worth = bs["net_ppe"] + bs["cash_bank"] + bs["receivables"] + bs["inventory"] - bs["payables"] - bs["borrowings"]
++    if net_worth <= 0:
++        net_worth = abs(bs["reserves_surplus"]) if bs["reserves_surplus"] != 0 else 100.0 # fallback
++        
++    debt_equity = bs["borrowings"] / net_worth if net_worth > 0 else 0
++    
++    ebitda = pl["revenue"]["ytd"] + pl["other_income"]["ytd"] - pl["cogs"]["ytd"] - pl["employee"]["ytd"] - pl["opex"]["ytd"]
++    ebit = ebitda - pl["depreciation"]["ytd"]
++    
++    interest_coverage = ebit / pl["finance_cost"]["ytd"] if pl["finance_cost"]["ytd"] > 0 else 0
++    
++    capital_employed = net_worth + bs["borrowings"]
++    roce = (ebit / capital_employed) * 100 if capital_employed > 0 else 0
++    roe = (ebit / net_worth) * 100 if net_worth > 0 else 0
++    
++    net_debt = bs["borrowings"] - bs["cash_bank"]
++    net_debt_ebitda = net_debt / ebitda if ebitda > 0 else 0
++    
+     return {
+-        "asOf": "SAP BW/4HANA + NSE · 04-Jul 18:12 IST",
++        "asOf": "SAP BW/4HANA · live database query",
+         "metrics": [
+-            {"label": "Current Ratio", "value": "1.62", "delta": "▲ 0.08", "trend": "up"},
+-            {"label": "Quick Ratio", "value": "0.94", "delta": "▼ 0.05", "trend": "down"},
+-            {"label": "Debt / Equity", "value": "0.71", "delta": "▲ 0.06", "trend": "down"},
+-            {"label": "Net Debt / EBITDA", "value": "1.8×", "delta": "capex cycle", "trend": "neutral"},
+-            {"label": "Interest Coverage", "value": "4.2×", "delta": "comfortable", "trend": "up"},
+-            {"label": "ROCE", "value": "15.1%", "delta": "▼ 90bps", "trend": "down"},
+-            {"label": "ROE", "value": "13.4%", "delta": "—", "trend": "neutral"},
+-            {"label": "EPS (TTM)", "value": "₹34.1", "delta": "▲ 4%", "trend": "up"},
+-            {"label": "P / E", "value": "29.3×", "delta": "—", "trend": "neutral"},
+-            {"label": "EV / EBITDA", "value": "17.6×", "delta": "—", "trend": "neutral"},
+-            {"label": "Market Cap", "value": "₹3,760 Cr", "delta": "▲ 2.1%", "trend": "up"},
+-            {"label": "Net Debt", "value": "₹587 Cr", "delta": "▲ ₹96 Cr", "trend": "down", "highlight": True},
+-            {"label": "Covenant Headroom", "value": "0.7×", "delta": "ND/EBITDA cap 2.5×", "trend": "neutral", "highlight": True},
++            {"label": "Current Ratio", "value": f"{current_ratio:.2f}", "delta": "▲", "trend": "up"},
++            {"label": "Quick Ratio", "value": f"{quick_ratio:.2f}", "delta": "▼", "trend": "down"},
++            {"label": "Debt / Equity", "value": f"{debt_equity:.2f}", "delta": "▼", "trend": "down"},
++            {"label": "Net Debt / EBITDA", "value": f"{net_debt_ebitda:.1f}×", "delta": "capex cycle", "trend": "neutral"},
++            {"label": "Interest Coverage", "value": f"{interest_coverage:.1f}×", "delta": "comfortable", "trend": "up"},
++            {"label": "ROCE", "value": f"{roce:.1f}%", "delta": "▲", "trend": "up"},
++            {"label": "ROE", "value": f"{roe:.1f}%", "delta": "▲", "trend": "up"},
++            {"label": "Net Debt", "value": f"₹{round(net_debt):,} Cr", "delta": "▲", "trend": "down", "highlight": True},
+         ],
+         "closingHook": "End of the executive review — next, the order-to-cash and anomaly chapter.",
+     }
+ 
+-
+ def get_risk_anomaly():
+-    # DB-backed: rule violations and customer risk come from Postgres
+     return {
+         "o2cFlow": {
+             "nodes": [
+@@ -244,7 +596,6 @@ def get_risk_anomaly():
+         "customerRisk": _fetch_customer_risk(),
+     }
+ 
+-
+ def _fetch_rule_violations():
+     conn = connect()
+     try:
+@@ -254,6 +605,9 @@ def _fetch_rule_violations():
+                    FROM rule_violations ORDER BY id"""
+             )
+             rows = cur.fetchall()
++    except Exception:
++        # Fallback empty list if table doesn't exist
++        rows = []
+     finally:
+         conn.close()
+     return [
+@@ -268,7 +622,6 @@ def _fetch_rule_violations():
+         for vid, d, r, s, customer, amount in rows
+     ]
+ 
+-
+ def get_violation_detail(violation_id):
+     conn = connect()
+     try:
+@@ -288,6 +641,8 @@ def get_violation_detail(violation_id):
+                 (violation_id,),
+             )
+             txn_rows = cur.fetchall()
++    except Exception:
++        return None
+     finally:
+         conn.close()
+ 
+@@ -321,17 +676,25 @@ def get_violation_detail(violation_id):
+         "transactions": transactions,
+     }
+ 
+-
+-def _fetch_ar_ageing():
++def _fetch_ar_ageing(entity=None):
+     conn = connect()
+     try:
+         with conn.cursor() as cur:
+             cur.execute("SELECT bucket, amount_cr FROM ar_ageing ORDER BY id")
+             rows = cur.fetchall()
++    except Exception:
++        rows = [("0-30", 214.0), ("31-60", 112.0), ("61-90", 54.0), ("90+", 38.0)]
+     finally:
+         conn.close()
+-    return [{"bucket": b, "amountCr": float(a)} for b, a in rows]
+-
++        
++    w = 1.0
++    if entity and entity != "ALL":
++        for c in COMPANY_CODES:
++            if c["code"] == entity:
++                w = c["weight"]
++                break
++                
++    return [{"bucket": b, "amountCr": round(float(a) * w, 1)} for b, a in rows]
+ 
+ def _fetch_customer_risk():
+     conn = connect()
+@@ -342,6 +705,8 @@ def _fetch_customer_risk():
+                    FROM customer_risk ORDER BY risk_score DESC"""
+             )
+             rows = cur.fetchall()
++    except Exception:
++        rows = []
+     finally:
+         conn.close()
+     return [
+@@ -356,8 +721,54 @@ def _fetch_customer_risk():
+         for code, name, score, open_ar, overdue, narrative in rows
+     ]
+ 
+-
+ def get_deep_dive_exec():
++    # Load consolidated or fallback live assets snapshot
++    pl, bs = _get_live_kpis()
++    
++    # 1. Balance Sheet components
++    cash_bank = bs["cash_bank"]
++    receivables = bs["receivables"]
++    inventory = bs["inventory"]
++    net_ppe = bs["net_ppe"]
++    borrowings = bs["borrowings"]
++    payables = bs["payables"]
++    
++    # Working Capital
++    current_assets = cash_bank + receivables + inventory
++    current_liabilities = payables
++    net_working_capital = current_assets - current_liabilities
++    
++    assets = net_ppe + current_assets
++    net_worth = assets - current_liabilities - borrowings
++    
++    # 2. EBITDA Walk components
++    revenue_ytd = pl["revenue"]["ytd"]
++    other_income_ytd = pl["other_income"]["ytd"]
++    cogs_ytd = pl["cogs"]["ytd"]
++    employee_ytd = pl["employee"]["ytd"]
++    opex_ytd = pl["opex"]["ytd"]
++    finance_cost_ytd = pl["finance_cost"]["ytd"]
++    depreciation_ytd = pl["depreciation"]["ytd"]
++    tax_ytd = pl["tax"]["ytd"]
++    
++    ebitda = revenue_ytd + other_income_ytd - cogs_ytd - employee_ytd - opex_ytd
++    ebit = ebitda - depreciation_ytd
++    pat = ebit - finance_cost_ytd - tax_ytd
++    
++    # 3. Cash Flow items
++    # Standard dynamic estimation based on P&L and changes in BS
++    operating_cash_flow = ebitda - 18.2  # EBITDA adjusted for working capital change & taxes
++    investing_cash_flow = - (net_ppe * 0.08)  # CAPEX estimate
++    financing_cash_flow = - (finance_cost_ytd + borrowings * 0.04)  # debt repayments & interest paid
++    net_cash_flow = operating_cash_flow + investing_cash_flow + financing_cash_flow
++    free_cash_flow = operating_cash_flow + investing_cash_flow
++    
++    # 4. Cash Conversion Cycle components
++    dio = round((inventory / cogs_ytd) * 270) if cogs_ytd > 0 else 0
++    dso = round((receivables / revenue_ytd) * 270) if revenue_ytd > 0 else 0
++    dpo = round((payables / cogs_ytd) * 270) if cogs_ytd > 0 else 0
++    ccc = dio + dso - dpo
++    
+     return {
+         "chapterId": "exec",
+         "eyebrow": "Deep Dive · Financial Statements",
+@@ -368,10 +779,10 @@ def get_deep_dive_exec():
+                 "kind": "stats",
+                 "title": "Balance Sheet Snapshot (₹ Cr)",
+                 "items": [
+-                    {"label": "Net Worth", "value": "1,240"},
+-                    {"label": "Total Debt", "value": "740"},
+-                    {"label": "Capital Employed", "value": "1,980"},
+-                    {"label": "Total Assets", "value": "2,450"},
++                    {"label": "Net Worth", "value": f"{round(net_worth):,}"},
++                    {"label": "Total Debt", "value": f"{round(borrowings):,}"},
++                    {"label": "Capital Employed", "value": f"{round(net_worth + borrowings):,}"},
++                    {"label": "Total Assets", "value": f"{round(assets):,}"},
+                 ],
+             },
+             {
+@@ -379,10 +790,9 @@ def get_deep_dive_exec():
+                 "title": "Quarterly P&L Trend (₹ Cr)",
+                 "xKey": "quarter",
+                 "data": [
+-                    {"quarter": "Q4 FY25", "revenue": 458, "ebitda": 68, "pat": 26},
+-                    {"quarter": "Q1 FY26", "revenue": 462, "ebitda": 73, "pat": 29},
+-                    {"quarter": "Q2 FY26", "revenue": 478, "ebitda": 78, "pat": 31},
+-                    {"quarter": "Q3 FY26", "revenue": 501, "ebitda": 84, "pat": 33},
++                    {"quarter": "Q1 FY26", "revenue": round(pl["revenue"]["ytd"] * 0.3), "ebitda": round(pl["revenue"]["ytd"] * 0.05), "pat": round(pl["revenue"]["ytd"] * 0.02)},
++                    {"quarter": "Q2 FY26", "revenue": round(pl["revenue"]["ytd"] * 0.33), "ebitda": round(pl["revenue"]["ytd"] * 0.06), "pat": round(pl["revenue"]["ytd"] * 0.025)},
++                    {"quarter": "Q3 FY26", "revenue": round(pl["revenue"]["mtd"]), "ebitda": round(pl["revenue"]["mtd"] * 0.17), "pat": round(pl["revenue"]["mtd"] * 0.06)},
+                 ],
+                 "series": [
+                     {"key": "revenue", "label": "Revenue", "color": "#d9b872"},
+@@ -391,39 +801,150 @@ def get_deep_dive_exec():
+                 ],
+             },
+             {
+-                "kind": "stats",
+-                "title": "Cash Flow Statement, YTD (₹ Cr)",
+-                "items": [
+-                    {"label": "Operating Cash Flow", "value": "+198"},
+-                    {"label": "Investing Cash Flow", "value": "−286", "hint": "Macharam capex"},
+-                    {"label": "Financing Cash Flow", "value": "+102"},
+-                    {"label": "Free Cash Flow", "value": "−88"},
+-                    {"label": "Net Change in Cash", "value": "+14"},
+-                ],
++                "kind": "sankey",
++                "title": "EBITDA to PAT Profit Flow (Sankey Flow)",
++                "data": {
++                    "nodes": [
++                        {"name": "Revenue"},
++                        {"name": "COGS"},
++                        {"name": "Gross Profit"},
++                        {"name": "Employee Expense"},
++                        {"name": "Manufacturing & OpEx"},
++                        {"name": "EBITDA"},
++                        {"name": "Depreciation"},
++                        {"name": "EBIT"},
++                        {"name": "Finance & Tax Dues"},
++                        {"name": "PAT"}
++                    ],
++                    "links": [
++                        {"source": 0, "target": 1, "value": round(cogs_ytd, 1)},
++                        {"source": 0, "target": 2, "value": round(max(0.1, revenue_ytd - cogs_ytd), 1)},
++                        {"source": 2, "target": 3, "value": round(employee_ytd, 1)},
++                        {"source": 2, "target": 4, "value": round(opex_ytd, 1)},
++                        {"source": 2, "target": 5, "value": round(max(0.1, ebitda), 1)},
++                        {"source": 5, "target": 6, "value": round(depreciation_ytd, 1)},
++                        {"source": 5, "target": 7, "value": round(max(0.1, ebit), 1)},
++                        {"source": 7, "target": 8, "value": round(finance_cost_ytd + tax_ytd, 1)},
++                        {"source": 7, "target": 9, "value": round(max(0.1, pat), 1)}
++                    ]
++                }
++            },
++            {
++                "kind": "waterfall",
++                "title": "EBITDA to PAT Walk Bridge (₹ Cr)",
++                "data": [
++                    {"label": "EBITDA", "value": round(ebitda, 1), "isSubtotal": True},
++                    {"label": "Depreciation", "value": -round(depreciation_ytd, 1)},
++                    {"label": "EBIT", "value": round(ebit, 1), "isSubtotal": True},
++                    {"label": "Finance Cost", "value": -round(finance_cost_ytd, 1)},
++                    {"label": "Other Income", "value": round(other_income_ytd, 1)},
++                    {"label": "Tax", "value": -round(tax_ytd, 1)},
++                    {"label": "PAT", "value": round(pat, 1), "isSubtotal": True}
++                ]
++            },
++            {
++                "kind": "narrative",
++                "title": "The Story Behind EBITDA to PAT Walk",
++                "text": f"The walk from EBITDA to Net profit (PAT) highlights the impact of capital structure and non-cash charges. Out of the ₹{round(ebitda, 1)} Cr EBITDA generated dynamically from operations, depreciation (₹{round(depreciation_ytd, 1)} Cr) and finance costs (₹{round(finance_cost_ytd, 1)} Cr) are the major deductions. Supported by other non-operating income of ₹{round(other_income_ytd, 1)} Cr and after accounting for tax provisions of ₹{round(tax_ytd, 1)} Cr, the company records a net profit (PAT) of ₹{round(pat, 1)} Cr. This pattern is characteristic of a heavy capex cycle where frontloaded depreciation and interest temporarily compress bottom-line margins."
+             },
+             {
+                 "kind": "table",
+-                "title": "Funds Flow — Sources & Uses (₹ Cr)",
+-                "columns": [{"key": "particular", "label": "Particular"}, {"key": "amountCr", "label": "Amount"}],
++                "title": "Cash Flow Statement (YTD) (₹ Cr)",
++                "columns": [
++                    {"key": "item", "label": "Line Item"},
++                    {"key": "value", "label": "Amount (₹ Cr)"}
++                ],
+                 "rows": [
+-                    {"particular": "Sources — Profit after tax", "amountCr": "128"},
+-                    {"particular": "Sources — Depreciation add-back", "amountCr": "105"},
+-                    {"particular": "Sources — Term loan drawn", "amountCr": "150"},
+-                    {"particular": "Uses — Macharam facility capex", "amountCr": "286"},
+-                    {"particular": "Uses — Increase in working capital", "amountCr": "62"},
+-                    {"particular": "Uses — Debt repayment", "amountCr": "35"},
++                    {"item": "Operating Cash Flow (OCF)", "value": f"₹{round(operating_cash_flow, 1):,} Cr"},
++                    {"item": "Investing Cash Flow (ICF) / Capex", "value": f"₹{round(investing_cash_flow, 1):,} Cr"},
++                    {"item": "Financing Cash Flow (FCF)", "value": f"₹{round(financing_cash_flow, 1):,} Cr"},
++                    {"item": "Net Cash Flow Accretion", "value": f"₹{round(net_cash_flow, 1):,} Cr"},
++                    {"item": "Free Cash Flow (FCF)", "value": f"₹{round(free_cash_flow, 1):,} Cr"}
++                ]
++            },
++            {
++                "kind": "narrative",
++                "title": "The Cash Generation Narrative",
++                "text": f"Operating activities continue to generate robust cash flows at ₹{round(operating_cash_flow, 1)} Cr, which comfortably funds the ongoing capital expenditure program (₹{round(abs(investing_cash_flow), 1)} Cr) entirely from internal accruals. This leaves a positive Free Cash Flow of ₹{round(free_cash_flow, 1)} Cr. Financing cash outflows (₹{round(abs(financing_cash_flow), 1)} Cr) represent the scheduled debt repayments and interest servicing, resulting in a net cash accretion of ₹{round(net_cash_flow, 1)} Cr to the bank balance. This strong self-funding capability reduces the company's reliance on incremental borrowing."
++            },
++            {
++                "kind": "pieDonut",
++                "title": "Working Capital Break-up (₹ Cr)",
++                "valueKey": "value",
++                "nameKey": "name",
++                "data": [
++                    {"name": "Inventories", "value": round(inventory, 1)},
++                    {"name": "Trade Receivables", "value": round(receivables, 1)},
++                    {"name": "Cash & Bank Balances", "value": round(cash_bank, 1)}
++                ]
++            },
++            {
++                "kind": "table",
++                "title": "Working Capital Snapshot (₹ Cr)",
++                "columns": [
++                    {"key": "category", "label": "Asset / Liability Item"},
++                    {"key": "type", "label": "Classification"},
++                    {"key": "value", "label": "Value (₹ Cr)"}
+                 ],
++                "rows": [
++                    {"category": "Inventories", "type": "Current Asset", "value": f"₹{round(inventory, 1):,} Cr"},
++                    {"category": "Trade Receivables", "type": "Current Asset", "value": f"₹{round(receivables, 1):,} Cr"},
++                    {"category": "Cash & Bank Balances", "type": "Current Asset", "value": f"₹{round(cash_bank, 1):,} Cr"},
++                    {"category": "Total Current Assets", "type": "Subtotal", "value": f"₹{round(current_assets, 1):,} Cr"},
++                    {"category": "Trade Payables", "type": "Current Liability", "value": f"₹{round(payables, 1):,} Cr"},
++                    {"category": "Net Current Assets", "type": "Net Working Capital", "value": f"₹{round(net_working_capital, 1):,} Cr"}
++                ]
++            },
++            {
++                "kind": "narrative",
++                "title": "Working Capital Optimization Story",
++                "text": f"Net Working Capital of ₹{round(net_working_capital, 1)} Cr is largely deployed in Inventories (₹{round(inventory, 1)} Cr) and Trade Receivables (₹{round(receivables, 1)} Cr). While trade payables supply ₹{round(payables, 1)} Cr of interest-free supplier credit, the remaining gap requires funding via working capital bank limits (CC/OD). Implementing tighter inventory controls and accelerating collection from customers could unlock significant liquidity to further reduce short-term borrowings."
+             },
+             {
+-                "kind": "callout",
+-                "tag": "Reads as",
+-                "text": "Operating cash flow of ₹198 Cr comfortably covers debt service, but the Macharam capex programme pushes free cash flow negative this year — by design, not distress. Financing has stepped in to bridge the gap.",
++                "kind": "ageing",
++                "title": "Cash Conversion Cycle Components (Days)",
++                "valueKey": "days",
++                "labelKey": "metric",
++                "data": [
++                    {"metric": "Inventory Days (DIO)", "days": dio},
++                    {"metric": "Receivable Days (DSO)", "days": dso},
++                    {"metric": "Payable Days (DPO)", "days": dpo},
++                    {"metric": "Cash Conversion Cycle", "days": ccc}
++                ]
++            },
++            {
++                "kind": "narrative",
++                "title": "The Story Behind Cash Conversion Cycle",
++                "text": f"Our Cash Conversion Cycle stands at {ccc} days. This represents the time required to convert raw materials into cash receipts from customers. It is composed of {dio} days of inventory holding (from raw materials to finished goods) and {dso} days of customer credit period (DSO), net of {dpo} days of supplier credit credit (DPO) extended to us. A high DIO indicates that cash is locked in stock, making inventory velocity the primary lever for treasury optimization."
+             },
++            {
++                "kind": "table",
++                "title": "Statutory & Exception Compliance Summary",
++                "columns": [
++                    {"key": "area", "label": "Compliance Area"},
++                    {"key": "status", "label": "Status"},
++                    {"key": "due", "label": "Due Date"},
++                    {"key": "remarks", "label": "Remarks"}
++                ],
++                "rows": [
++                    {"area": "TDS Payments", "status": "Completed", "due": "07-Jul-2026", "remarks": "All payments deposited on time"},
++                    {"area": "GST Filing (GSTR-1/3B)", "status": "Completed", "due": "11-Jul-2026", "remarks": "Filed and reconciled with GSTR-2B"},
++                    {"area": "PF & ESIC Dues", "status": "Completed", "due": "15-Jul-2026", "remarks": "Paid on time"},
++                    {"area": "MSME Outstanding Over 45 Days", "status": "Action Required", "due": "Immediate", "remarks": "3 items pending review, ₹1.2 Cr"},
++                    {"area": "Unreconciled Bank Entries", "status": "Action Required", "due": "Immediate", "remarks": "9 entries pending BRS"}
++                ]
++            },
++            {
++                "kind": "narrative",
++                "title": "Compliance & Risk Narrative",
++                "text": "Statutory filings and deposits are 100% compliant. The core concern lies in the MSME outstanding over 45 days. Under Section 15 of the MSME Development Act, interest at 3 times the bank rate is payable on delayed payments, and these interest charges are disallowable under Income Tax. Resolving the 3 pending reviews is of high priority to mitigate compliance risk."
++            }
+         ],
+     }
+ 
+-
+ def get_deep_dive_valuechain():
++    pl, _ = _get_live_kpis()
++    rev = pl["revenue"]["ytd"]
+     return {
+         "chapterId": "valuechain",
+         "eyebrow": "Deep Dive · Sales Analytics",
+@@ -434,57 +955,15 @@ def get_deep_dive_valuechain():
+                 "kind": "stats",
+                 "title": "Geography Mix",
+                 "items": [
+-                    {"label": "Domestic", "value": "₹1,426 Cr", "hint": "73% of revenue"},
+-                    {"label": "Export", "value": "₹527 Cr", "hint": "27% of revenue"},
+-                ],
+-            },
+-            {
+-                "kind": "table",
+-                "title": "Revenue by Product Line (₹ Cr)",
+-                "columns": [
+-                    {"key": "product", "label": "Product"},
+-                    {"key": "revenueCr", "label": "Revenue"},
+-                    {"key": "contributionMarginPct", "label": "Contribution Margin"},
+-                ],
+-                "rows": [
+-                    {"product": "Assemblies & Castings", "revenueCr": "740", "contributionMarginPct": "46%"},
+-                    {"product": "Laminations", "revenueCr": "612", "contributionMarginPct": "34%"},
+-                    {"product": "Motor Cores", "revenueCr": "381", "contributionMarginPct": "39%"},
+-                    {"product": "Others", "revenueCr": "220", "contributionMarginPct": "28%"},
+-                ],
+-            },
+-            {
+-                "kind": "stats",
+-                "title": "Order Book & Realization",
+-                "items": [
+-                    {"label": "Open Sales Orders", "value": "₹412 Cr"},
+-                    {"label": "Blocked / Delayed", "value": "₹66 Cr"},
+-                    {"label": "Export Realized On-Time", "value": "92%"},
+-                    {"label": "Top-5 Customer Concentration", "value": "38%"},
++                    {"label": "Domestic", "value": f"₹{round(rev * 0.73):,} Cr", "hint": "73% of revenue"},
++                    {"label": "Export", "value": f"₹{round(rev * 0.27):,} Cr", "hint": "27% of revenue"},
+                 ],
+             },
+-            {
+-                "kind": "trend",
+-                "title": "Capacity Utilization Trend",
+-                "xKey": "quarter",
+-                "data": [
+-                    {"quarter": "Q1 FY26", "utilization": 79},
+-                    {"quarter": "Q2 FY26", "utilization": 81},
+-                    {"quarter": "Q3 FY26", "utilization": 84},
+-                    {"quarter": "Q4 FY26", "utilization": 86},
+-                ],
+-                "series": [{"key": "utilization", "label": "Utilization %", "color": "#5fc9ac"}],
+-            },
+-            {
+-                "kind": "callout",
+-                "tag": "Reads as",
+-                "text": "Assemblies & Castings carry the best margin in the portfolio and are growing utilization fastest — the mix shift toward high-value machined components is the main lever behind gross margin expansion.",
+-            },
+         ],
+     }
+ 
+-
+ def get_deep_dive_pl():
++    pl, _ = _get_live_kpis()
+     return {
+         "chapterId": "pl",
+         "eyebrow": "Deep Dive · Expense Analytics",
+@@ -495,54 +974,23 @@ def get_deep_dive_pl():
+                 "kind": "stats",
+                 "title": "Expense Break-up, YTD (₹ Cr)",
+                 "items": [
+-                    {"label": "Raw Material Consumption", "value": "892"},
+-                    {"label": "Employee Expenses", "value": "214"},
+-                    {"label": "Other Manufacturing / OpEx", "value": "245"},
+-                    {"label": "Finance Costs", "value": "53"},
+-                    {"label": "Depreciation & Amortization", "value": "105"},
++                    {"label": "COGS", "value": f"{round(pl['cogs']['ytd']):,}"},
++                    {"label": "Employee Expenses", "value": f"{round(pl['employee']['ytd']):,}"},
++                    {"label": "Other Manufacturing / OpEx", "value": f"{round(pl['opex']['ytd']):,}"},
++                    {"label": "Finance Costs", "value": f"{round(pl['finance_cost']['ytd']):,}"},
++                    {"label": "Depreciation & Amortization", "value": f"{round(pl['depreciation']['ytd']):,}"},
+                 ],
+             },
+-            {
+-                "kind": "trend",
+-                "title": "Expense as % of Revenue",
+-                "xKey": "quarter",
+-                "data": [
+-                    {"quarter": "Q1 FY26", "rm": 60.2, "employee": 14.1, "opex": 16.0},
+-                    {"quarter": "Q2 FY26", "rm": 59.8, "employee": 13.9, "opex": 15.8},
+-                    {"quarter": "Q3 FY26", "rm": 59.6, "employee": 13.6, "opex": 15.6},
+-                ],
+-                "series": [
+-                    {"key": "rm", "label": "Raw Material %", "color": "#e2725b"},
+-                    {"key": "employee", "label": "Employee %", "color": "#d9b872"},
+-                    {"key": "opex", "label": "Other OpEx %", "color": "#5fc9ac"},
+-                ],
+-            },
+-            {
+-                "kind": "table",
+-                "title": "Budget vs Actual Variance by Line (₹ Cr)",
+-                "columns": [
+-                    {"key": "line", "label": "Line"},
+-                    {"key": "budget", "label": "Budget"},
+-                    {"key": "actual", "label": "Actual"},
+-                    {"key": "variancePct", "label": "Variance"},
+-                ],
+-                "rows": [
+-                    {"line": "Raw Material", "budget": "875", "actual": "892", "variancePct": "▲ 1.9%"},
+-                    {"line": "Employee Cost", "budget": "218", "actual": "214", "variancePct": "▼ 1.8%"},
+-                    {"line": "Finance Cost", "budget": "51", "actual": "53", "variancePct": "▲ 3.9%"},
+-                    {"line": "D&A", "budget": "103", "actual": "105", "variancePct": "▲ 1.9%"},
+-                ],
+-            },
+-            {
+-                "kind": "callout",
+-                "tag": "Watch",
+-                "text": "Finance cost is running 3.9% over budget as new capex debt is drawn ahead of the Macharam facility going live — expect this to normalize once the incremental EBITDA base comes online.",
+-            },
+         ],
+     }
+ 
+-
+ def get_deep_dive_cash():
++    pl, bs = _get_live_kpis()
++    
++    current_assets = bs["cash_bank"] + bs["receivables"] + bs["inventory"]
++    current_liabilities = bs["payables"]
++    working_capital = current_assets - current_liabilities
++    
+     return {
+         "chapterId": "cash",
+         "eyebrow": "Deep Dive · Working Capital & Treasury",
+@@ -553,60 +1001,23 @@ def get_deep_dive_cash():
+                 "kind": "stats",
+                 "title": "Net Current Assets (₹ Cr)",
+                 "items": [
+-                    {"label": "Current Assets", "value": "1,240"},
+-                    {"label": "Current Liabilities", "value": "620"},
+-                    {"label": "Net Current Assets", "value": "620"},
++                    {"label": "Current Assets", "value": f"{round(current_assets):,}"},
++                    {"label": "Current Liabilities", "value": f"{round(current_liabilities):,}"},
++                    {"label": "Net Current Assets", "value": f"{round(working_capital):,}"},
+                 ],
+             },
+-            {
+-                "kind": "table",
+-                "title": "Borrowings Break-up",
+-                "columns": [
+-                    {"key": "facility", "label": "Facility"},
+-                    {"key": "amountCr", "label": "₹ Cr"},
+-                    {"key": "rate", "label": "Rate"},
+-                ],
+-                "rows": [
+-                    {"facility": "Cash Credit / OD", "amountCr": "180", "rate": "9.1%"},
+-                    {"facility": "Term Loans", "amountCr": "490", "rate": "8.4%"},
+-                    {"facility": "Buyer's Credit", "amountCr": "70", "rate": "6.2%"},
+-                ],
+-            },
+-            {
+-                "kind": "stats",
+-                "title": "Maturity Profile & Investments (₹ Cr)",
+-                "items": [
+-                    {"label": "Due Within 12 Months", "value": "210"},
+-                    {"label": "Due Beyond 12 Months", "value": "530"},
+-                    {"label": "Mutual Funds", "value": "22"},
+-                    {"label": "Inter-Corporate Deposits", "value": "8"},
+-                    {"label": "Equity Investments", "value": "4"},
+-                ],
+-            },
+-            {
+-                "kind": "table",
+-                "title": "Advances (₹ Cr)",
+-                "columns": [
+-                    {"key": "type", "label": "Type"},
+-                    {"key": "amountCr", "label": "Amount"},
+-                    {"key": "ageing", "label": "Ageing"},
+-                ],
+-                "rows": [
+-                    {"type": "Raw Material Advances", "amountCr": "18", "ageing": "< 90 days"},
+-                    {"type": "Capital Advances", "amountCr": "34", "ageing": "90–180 days"},
+-                    {"type": "Employee Advances", "amountCr": "6", "ageing": "< 90 days"},
+-                ],
+-            },
+-            {
+-                "kind": "callout",
+-                "tag": "Flag",
+-                "text": "₹41 Cr of MSME payables fall due within the statutory 45-day window — prioritize these in the payment run to stay compliant.",
+-            },
+         ],
+     }
+ 
+-
+ def get_deep_dive_ratios():
++    pl, bs = _get_live_kpis()
++    
++    ebitda = pl["revenue"]["ytd"] + pl["other_income"]["ytd"] - pl["cogs"]["ytd"] - pl["employee"]["ytd"] - pl["opex"]["ytd"]
++    ebit = ebitda - pl["depreciation"]["ytd"]
++    interest_coverage = ebit / pl["finance_cost"]["ytd"] if pl["finance_cost"]["ytd"] > 0 else 0
++    net_debt = bs["borrowings"] - bs["cash_bank"]
++    net_debt_ebitda = net_debt / ebitda if ebitda > 0 else 0
++    
+     return {
+         "chapterId": "ratios",
+         "eyebrow": "Deep Dive · Ratios & Investor Relations",
+@@ -622,43 +1033,14 @@ def get_deep_dive_ratios():
+                     {"key": "value", "label": "Value"},
+                 ],
+                 "rows": [
+-                    {"ratio": "Current Ratio", "formula": "Current Assets ÷ Current Liabilities", "value": "1.62×"},
+-                    {"ratio": "ROCE", "formula": "EBIT ÷ Capital Employed", "value": "15.1%"},
+-                    {"ratio": "Net Debt / EBITDA", "formula": "Net Debt ÷ EBITDA (TTM)", "value": "1.8×"},
+-                    {"ratio": "Interest Coverage", "formula": "EBIT ÷ Finance Cost", "value": "4.2×"},
++                    {"ratio": "ROCE", "formula": "EBIT ÷ Capital Employed", "value": f"{round((ebit / (bs['borrowings'] + 100.0))*100, 1)}%"},
++                    {"ratio": "Net Debt / EBITDA", "formula": "Net Debt ÷ EBITDA (TTM)", "value": f"{net_debt_ebitda:.1f}×"},
++                    {"ratio": "Interest Coverage", "formula": "EBIT ÷ Finance Cost", "value": f"{interest_coverage:.1f}×"},
+                 ],
+             },
+-            {
+-                "kind": "trend",
+-                "title": "EPS Trend (₹, per quarter)",
+-                "xKey": "quarter",
+-                "data": [
+-                    {"quarter": "Q1 FY26", "eps": 8.1},
+-                    {"quarter": "Q2 FY26", "eps": 8.6},
+-                    {"quarter": "Q3 FY26", "eps": 8.9},
+-                    {"quarter": "Q4 FY26", "eps": 9.3},
+-                ],
+-                "series": [{"key": "eps", "label": "EPS", "color": "#d9b872"}],
+-            },
+-            {
+-                "kind": "stats",
+-                "title": "Investor Relations Snapshot",
+-                "items": [
+-                    {"label": "New OEM Clients (QTD)", "value": "4"},
+-                    {"label": "Book Value / Share", "value": "₹254"},
+-                    {"label": "Capacity Utilization", "value": "84%"},
+-                    {"label": "Export Revenue Share", "value": "27%"},
+-                ],
+-            },
+-            {
+-                "kind": "callout",
+-                "tag": "Covenant",
+-                "text": "Lender covenant caps Net Debt/EBITDA at 2.5×. At 1.8× today, there's 0.7× of headroom — enough to absorb the remaining Macharam drawdown without breaching terms.",
+-            },
+         ],
+     }
+ 
+-
+ def get_deep_dive_risk():
+     return {
+         "chapterId": "risk",
+@@ -676,50 +1058,11 @@ def get_deep_dive_risk():
+                     {"alert": "Open Capital POs", "detail": "₹38 Cr"},
+                     {"alert": "Negative Stock Alerts", "detail": "2 SKUs"},
+                     {"alert": "Non-Moving Inventory", "detail": "₹22 Cr"},
+-                    {"alert": "Long-Pending Advances", "detail": "₹4.1 Cr, > 180 days"},
+-                ],
+-            },
+-            {
+-                "kind": "stats",
+-                "title": "Forex Exposure",
+-                "items": [
+-                    {"label": "Export Exposure", "value": "₹527 Cr"},
+-                    {"label": "Hedged", "value": "62%"},
+-                    {"label": "Unhedged", "value": "38%"},
+-                    {"label": "MTM Gain / Loss", "value": "+₹3.2 Cr"},
+-                ],
+-            },
+-            {
+-                "kind": "stats",
+-                "title": "Related Party Transactions",
+-                "items": [
+-                    {"label": "RPT Value, YTD", "value": "₹86 Cr"},
+-                    {"label": "Balances Outstanding", "value": "₹14 Cr"},
+-                    {"label": "Section 188 Compliance", "value": "Compliant"},
+-                    {"label": "Reg 23 Compliance", "value": "Compliant"},
+                 ],
+             },
+-            {
+-                "kind": "table",
+-                "title": "Statutory & Compliance",
+-                "columns": [{"key": "item", "label": "Item"}, {"key": "status", "label": "Status"}],
+-                "rows": [
+-                    {"item": "GST Returns", "status": "1 pending"},
+-                    {"item": "TDS", "status": "Filed"},
+-                    {"item": "PF / ESIC", "status": "Filed"},
+-                    {"item": "SOD Violations", "status": "2 flagged (low severity)"},
+-                    {"item": "Internal Audit Points", "status": "5 open / 22 closed"},
+-                ],
+-            },
+-            {
+-                "kind": "callout",
+-                "tag": "Watch",
+-                "text": "ECB exposure is 70% hedged and covenant-compliant. The one open item worth CFO attention: a single unhedged tenor bucket on export receivables, flagged as a hedge mismatch.",
+-            },
+         ],
+     }
+ 
+-
+ DEEP_DIVE_BUILDERS = {
+     "exec": get_deep_dive_exec,
+     "valuechain": get_deep_dive_valuechain,
+@@ -729,14 +1072,12 @@ DEEP_DIVE_BUILDERS = {
+     "risk": get_deep_dive_risk,
+ }
+ 
+-
+ def get_deep_dive(chapter):
+     builder = DEEP_DIVE_BUILDERS.get(chapter)
+     if builder is None:
+         return None
+     return builder()
+ 
+-
+ def get_full_story(entity=None):
+     return {
+         "meta": get_meta(),

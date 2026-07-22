@@ -1,0 +1,337 @@
+.chapter {
+  min-height: 100vh;
+  padding: 120px 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  border-top: 1px solid var(--line);
+}
+
+.chapter__label {
+  margin-bottom: 28px;
+}
+
+.chapter__label h2 {
+  font-size: 2rem;
+  margin-top: 8px;
+  max-width: 620px;
+  line-height: 1.25;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.narrative-col p {
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-size: 0.98rem;
+  max-width: 420px;
+}
+
+.narrative-col .hook {
+  margin-top: 24px;
+  color: var(--accent);
+  font-style: italic;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px;
+}
+
+.stat-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.stat-card__value {
+  font-size: 1.9rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+
+.stat-card__label {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  margin-top: 4px;
+}
+
+.stat-card__delta {
+  font-size: 0.74rem;
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+  color: var(--text-faint);
+}
+
+.stat-card__delta span.up {
+  color: var(--positive);
+}
+.stat-card__delta span.down {
+  color: var(--negative);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.badge--critical {
+  background: rgba(226, 73, 95, 0.18);
+  color: #f28091;
+}
+.badge--high {
+  background: rgba(226, 114, 91, 0.18);
+  color: #ef9a86;
+}
+.badge--medium {
+  background: rgba(217, 184, 114, 0.18);
+  color: var(--accent);
+}
+.badge--low {
+  background: rgba(95, 201, 172, 0.16);
+  color: var(--positive);
+}
+
+.alert-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.alert-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px;
+}
+
+.panel-title {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+.violation-row,
+.risk-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+
+.violation-row:last-child,
+.risk-row:last-child {
+  border-bottom: none;
+}
+
+.panel-hint {
+  font-size: 0.76rem;
+  color: var(--text-faint);
+  margin: -8px 0 12px;
+}
+
+.violation-row--link {
+  color: inherit;
+  text-decoration: none;
+  gap: 12px;
+  border-radius: 6px;
+  transition: background 0.15s ease, padding 0.15s ease;
+}
+
+.violation-row--link:hover {
+  background: rgba(255, 255, 255, 0.03);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.risk-row__meta {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  margin-top: 4px;
+}
+
+.risk-row__narrative {
+  color: var(--text-dim);
+  font-style: italic;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  margin-top: 6px;
+  max-width: 520px;
+}
+
+.risk-score {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  min-width: 48px;
+  text-align: right;
+}
+
+.callout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--accent-soft);
+  border: 1px solid rgba(217, 184, 114, 0.3);
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+
+.callout__tag {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  border: 1px solid rgba(217, 184, 114, 0.4);
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin-top: 2px;
+}
+
+.callout__text {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.callout--warn {
+  background: var(--risk-soft);
+  border-color: rgba(226, 73, 95, 0.32);
+}
+
+.callout--warn .callout__tag {
+  color: #f28091;
+  border-color: rgba(226, 73, 95, 0.4);
+}
+
+.chapter-deepdive {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 184, 114, 0.4);
+  color: var(--accent);
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.chapter-deepdive:hover {
+  background: var(--accent-soft);
+  transform: translateX(2px);
+}
+
+.chapter-deepdive::after {
+  content: "→";
+  transition: transform 0.15s ease;
+}
+
+.chapter-deepdive:hover::after {
+  transform: translateX(2px);
+}
+
+.brand-mark {
+  position: fixed;
+  top: 28px;
+  left: 40px;
+  height: 94px;
+  width: auto;
+  z-index: 60;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.brand-mark--pitti {
+  left: auto;
+  right: 40px;
+}
+
+.dd-back {
+  position: fixed;
+  top: 36px;
+  left: 40px;
+  z-index: 60;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  transition: color 0.15s ease;
+}
+
+.dd-back:hover {
+  color: var(--accent);
+}
+
+/* Sub-Switcher for Chapters */
+.sub-switcher {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+  width: fit-content;
+  margin-bottom: 24px;
+}
+
+.sub-switcher__pill {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sub-switcher__pill:hover {
+  color: var(--text);
+}
+
+.sub-switcher__pill.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+

@@ -1,0 +1,35 @@
+.entity-switcher {
+  position: fixed;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 61;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+}
+
+.entity-switcher__pill {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.entity-switcher__pill:hover {
+  color: var(--text);
+}
+
+.entity-switcher__pill.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
