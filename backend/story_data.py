@@ -587,11 +587,11 @@ def get_exec_summary(entity=None):
             "netDebt": -45.5,
             "cashConversionCycle": 68,
             "workingCapital": 54.8,
-            "readsAs": "A capex year. The plant is being scaled ahead of the demand curve — depreciation and interest are front-loaded, revenue and PAT catch up later.",
+            "readsAs": "Pitti Industries Private Limited (CIN: U31200TS2006PTC208072, inc. 19-Jan-2006, Hyderabad) manufactures electricity distribution and control apparatus (NIC 3120). Paid-up capital stands at ₹3.09 Cr with ₹5.00 Cr authorized capital.",
             "alerts": [
-                {"label": "DSO stretched to 39 days — ₹38 Cr overdue 90+ days, concentrated in 3 export accounts", "severity": "high"},
-                {"label": "MSME payables of ₹2.4 Cr fall due within 45 days", "severity": "medium"},
-                {"label": "Net debt up to ₹552 Cr on the Macharam capex cycle", "severity": "medium"},
+                {"label": "DSO 35 days — electrical apparatus & control panel supply realizations on schedule", "severity": "low"},
+                {"label": "MSME payables of ₹2.4 Cr for switchgear & component vendors due within 45 days", "severity": "medium"},
+                {"label": "Net cash surplus position of ₹45.5 Cr supporting control panel expansion", "severity": "low"},
             ],
         }
     w = _entity_weight(entity)
@@ -667,46 +667,46 @@ def get_value_chain(entity=None):
         }
     elif entity == "4000":
         return {
-            "headline": "How steel becomes revenue.",
-            "subhead": "Follow one flow, left to right — each stage adds margin, and the finished parts fan out into the sectors that pay for them.",
+            "headline": "How raw electrical components become distribution & control apparatus.",
+            "subhead": "Follow one flow, left to right — switching & protection modules add margin, and control panels/consoles fan out into distribution sectors.",
             "stages": [
                 {
                     "kind": "input",
                     "tag": "INPUT",
-                    "name": "Electrical Steel",
-                    "detail": "CRGO / CRNGO coils, International procurement",
-                    "value": "~11,945 T",
+                    "name": "Electrical Components & Conductors",
+                    "detail": "Copper/Aluminum conductors, busbars, insulators & enclosures",
+                    "value": "~11,945 Units",
                 },
                 {
                     "kind": "stage",
                     "tag": "STAGE 01",
-                    "name": "Laminations",
-                    "detail": "Stamped cores, loose + slot",
-                    "value": "11,530 T",
+                    "name": "Switching & Protection Modules",
+                    "detail": "Switches, fuses, limiters & surge suppressors (>1000V)",
+                    "value": "11,530 Units",
                     "delta": "+10%",
                 },
                 {
                     "kind": "stage-highlight",
                     "tag": "STAGE 02 · HIGH VALUE",
-                    "name": "Assemblies & Castings",
-                    "detail": "Machined components, die-cast rotors",
-                    "value": "1,993 T",
+                    "name": "Panels, Consoles & Cabinets",
+                    "detail": "Control boards, consoles, cabinets & capacitors (NIC 3120)",
+                    "value": "1,993 Units",
                     "delta": "+15%",
                 },
                 {
                     "kind": "output",
                     "tag": "OUTPUT · REVENUE",
-                    "name": "Finished Sales",
+                    "name": "Finished Distribution Apparatus",
                     "detail": "Domestic 68% · Export 32%",
                     "value": "₹324 Cr",
                 },
             ],
             "sectors": [
-                {"name": "Railways", "share": "28%"},
-                {"name": "Power", "share": "24%"},
-                {"name": "Industrial & Mining", "share": "21%"},
-                {"name": "Oil & Gas", "share": "15%"},
-                {"name": "Data Centers & Renewables", "share": "12%", "trend": "up", "highlight": True},
+                {"name": "Electricity Distribution Utilities", "share": "30%"},
+                {"name": "Industrial Control & Switching", "share": "25%"},
+                {"name": "Power Capacitors & Consoles", "share": "22%"},
+                {"name": "High Voltage Protection (>1000V)", "share": "13%"},
+                {"name": "Renewables & Substation Panels", "share": "10%", "trend": "up", "highlight": True},
             ],
             "capacityUtilizationPct": 84,
             "orderBookCr": 68.0,
@@ -832,7 +832,7 @@ def get_pl_bridge(entity=None):
                 {"quarter": "Q3 FY26", "gm": gm_pct, "ebitda": ebitda_pct, "pat": pat_pct},
             ],
             "variance": {"budget": 300.0, "actual": round(rev, 1)},
-            "watch": "Once the Macharam facility turns revenue-generating, the same depreciation base spreads over a larger topline — PAT should re-converge with EBITDA.",
+            "watch": "Pitti Industries Private Limited (NIC 3120) focus on high-voltage protection apparatus, control panels, and distribution cabinets drives margin expansion as panel assembly scales.",
             "quarterlyKpis": []
         }
     w = _entity_weight(entity)
@@ -939,7 +939,7 @@ def get_cash_working_capital(entity=None):
                 "cashAndBank": 45.4,
                 "netDebt": -45.5,
             },
-            "flag": "Export receivables running smoothly — ₹82.0 Cr sits in trade receivables.",
+            "flag": "DSO stands at 35 days — ₹82.0 Cr in distribution apparatus & panel receivables.",
             "freeCashFlowCr": -14.6,
         }
     w = _entity_weight(entity)
@@ -1017,7 +1017,7 @@ def get_ratios_valuation(entity=None):
                 {"label": "Net Debt", "value": "₹-45 Cr", "delta": "Net Cash", "trend": "up", "highlight": True},
                 {"label": "Covenant Headroom", "value": "1.5x", "delta": "comfortable", "trend": "up"},
             ],
-            "closingHook": "End of the executive review — next, the order-to-cash and anomaly chapter.",
+            "closingHook": "End of executive review for Pitti Industries Private Limited (CIN: U31200TS2006PTC208072) — next, the order-to-cash and anomaly chapter.",
             "quarterlyKpis": None,
             "quarterlyGmKpis": None
         }
