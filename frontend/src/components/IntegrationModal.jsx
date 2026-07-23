@@ -23,8 +23,8 @@ export default function IntegrationModal({ isOpen, companyCode, onClose }) {
       };
     } else {
       return {
-        name: "Pitti Industries pvt Ltd",
-        text: "The ERP data pipelines for Pitti Industries pvt Ltd (company code 4000) are currently being configured. Standalone statements will be available once the integration is complete."
+        name: "Pitti Industries Private Limited",
+        text: "The ERP data pipelines for Pitti Industries Private Limited (company code 4000, CIN: U31200TS2006PTC208072) are currently being configured. Standalone statements will be available once the integration is complete."
       };
     }
   };

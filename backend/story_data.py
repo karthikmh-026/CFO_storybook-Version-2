@@ -14,7 +14,7 @@ PERIOD_LABEL = "FY26"
 COMPANY_CODES = [
     {"code": "ALL", "name": "Pitti Group — Consolidated", "weight": 1.0},
     {"code": "1000", "name": "Pitti Engineering Ltd", "weight": 0.42},
-    {"code": "4000", "name": "Pitti International FZE", "weight": 0.58},
+    {"code": "4000", "name": "Pitti Industries Private Limited", "weight": 0.58},
 ]
 
 # Cache for G/L mapping to Classification
@@ -1865,8 +1865,8 @@ def get_deep_dive_valuechain():
                 "title": "Key Sales Performance Indicators",
                 "items": [
                     {"label": "YTD Consolidated Revenue", "value": f"₹{round(rev, 1)} Cr", "hint": "FY26 YTD"},
-                    {"label": "Domestic Sales", "value": f"₹{dom_val} Cr", "hint": "73% share of total"},
-                    {"label": "Export Sales (FZE & Direct)", "value": f"₹{exp_val} Cr", "hint": "27% share of total"},
+                    {"label": "Domestic Engineering Sales", "value": f"₹{dom_val} Cr", "hint": "73% share of total"},
+                    {"label": "Electrical Apparatus Sales (Pitti Industries)", "value": f"₹{exp_val} Cr", "hint": "27% share of total"},
                     {"label": "Run-rate Growth", "value": f"+{growth_pct}%", "hint": "Q3 vs Q1 run-rate progression"}
                 ]
             },
@@ -1900,7 +1900,7 @@ def get_deep_dive_valuechain():
                     {"name": "1000 - Pitti Engineering", "value": round(rev * 0.42, 1)},
                     {"name": "2000 - Pitti Castings", "value": round(rev * 0.27, 1)},
                     {"name": "3000 - Pitti Rail", "value": round(rev * 0.19, 1)},
-                    {"name": "4000 - Pitti FZE", "value": round(rev * 0.12, 1)},
+                    {"name": "4000 - Pitti Industries", "value": round(rev * 0.12, 1)},
                 ]
             },
             {
@@ -1908,7 +1908,7 @@ def get_deep_dive_valuechain():
                 "text": (
                     f"Pitti Engineering (1000) anchors the group at 42% of consolidated revenue, driven by its lamination and precision component portfolio for power OEMs. "
                     f"Pitti Rail (3000) punches above its weight — contributing 19% of revenue while serving as the sole-source supplier for several critical rolling-stock sub-assemblies. "
-                    f"Pitti International FZE (4000) at ₹{round(rev * 0.12, 1)} Cr captures export demand; its margin profile is the strongest in the group given zero GST outflow and premium USD pricing."
+                    f"Pitti Industries Private Limited (4000) (CIN: U31200TS2006PTC208072, inc. 19-Jan-2006, RoC-Hyderabad) at ₹{round(rev * 0.12, 1)} Cr specializes in manufacturing electricity distribution and control apparatus (NIC 3120); its paid-up capital stands at ₹3.09 Cr with ₹5.00 Cr authorized capital."
                 )
             },
             {
@@ -1921,7 +1921,7 @@ def get_deep_dive_valuechain():
                     {"name": "Tier 1 OEMs", "value": 45, "color": "#5fc9ac"},
                     {"name": "Tier 2 Suppliers", "value": 30, "color": "#4287f5"},
                     {"name": "Aftermarket / Spares", "value": 15, "color": "#d9b872"},
-                    {"name": "Export Direct", "value": 10, "color": "#e2725b"}
+                    {"name": "Export & Direct", "value": 10, "color": "#e2725b"}
                 ]
             },
             {
@@ -1936,7 +1936,7 @@ def get_deep_dive_valuechain():
                         {"name": "1000 - Pitti Engineering"},
                         {"name": "2000 - Pitti Castings"},
                         {"name": "3000 - Pitti Rail"},
-                        {"name": "4000 - Pitti FZE"},
+                        {"name": "4000 - Pitti Industries"},
                         {"name": "Consolidated Revenue"},
                         {"name": "Railways Demand"},
                         {"name": "Power Sector"},
