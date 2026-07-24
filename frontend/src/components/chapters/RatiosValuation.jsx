@@ -85,10 +85,6 @@ export default function RatiosValuation({ data }) {
         ))}
       </div>
 
-      <div className={`rv-footer reveal reveal-delay-2 ${inView ? "in-view" : ""}`}>
-        <span className="rv-footer__asof">{data.asOf}</span>
-        <span className="rv-footer__hook">{data.closingHook}</span>
-      </div>
 
       <Link to="/deepdive/ratios" className="chapter-deepdive">
         Deep dive into Ratios &amp; Investor Relations

@@ -338,23 +338,23 @@ def _fetch_entity_pl(entity_code, categories, conn=None, year="2025"):
                 raw_mtd["tax"] = (57.7 * CRORE) / 9.0
 
             if entity_code == "4000":
-                # Adjust 4000's revenue and other income to match target 320.19 Cr (Total = 317.336303151 + 2.857077124)
-                raw_ytd["revenue"] = 317.336303151 * CRORE
-                raw_mtd["revenue"] = (317.336303151 * CRORE) / 9.0
-                raw_ytd["other_income"] = 2.857077124 * CRORE
-                raw_mtd["other_income"] = (2.857077124 * CRORE) / 9.0
-                raw_ytd["cogs"] = 193.8 * CRORE
-                raw_mtd["cogs"] = (193.8 * CRORE) / 9.0
-                raw_ytd["employee"] = 25.8 * CRORE
-                raw_mtd["employee"] = (25.8 * CRORE) / 9.0
-                raw_ytd["opex"] = 69.5 * CRORE
-                raw_mtd["opex"] = (69.5 * CRORE) / 9.0
-                raw_ytd["finance_cost"] = 7.0 * CRORE
-                raw_mtd["finance_cost"] = (7.0 * CRORE) / 9.0
-                raw_ytd["depreciation"] = 7.1 * CRORE
-                raw_mtd["depreciation"] = (7.1 * CRORE) / 9.0
-                raw_ytd["tax"] = 0.5 * CRORE
-                raw_mtd["tax"] = (0.5 * CRORE) / 9.0
+                # Adjusted to 4000 P&L Excel sheet: Total Revenue = 324.01 Cr (Revenue ops 322.7935 Cr + Other income 1.2183 Cr)
+                raw_ytd["revenue"] = 322.7935 * CRORE
+                raw_mtd["revenue"] = (322.7935 * CRORE) / 9.0
+                raw_ytd["other_income"] = 1.2183 * CRORE
+                raw_mtd["other_income"] = (1.2183 * CRORE) / 9.0
+                raw_ytd["cogs"] = 231.5538 * CRORE
+                raw_mtd["cogs"] = (231.5538 * CRORE) / 9.0
+                raw_ytd["employee"] = 29.0145 * CRORE
+                raw_mtd["employee"] = (29.0145 * CRORE) / 9.0
+                raw_ytd["opex"] = 32.1826 * CRORE
+                raw_mtd["opex"] = (32.1826 * CRORE) / 9.0
+                raw_ytd["finance_cost"] = 0.5590 * CRORE
+                raw_mtd["finance_cost"] = (0.5590 * CRORE) / 9.0
+                raw_ytd["depreciation"] = 7.0995 * CRORE
+                raw_mtd["depreciation"] = (7.0995 * CRORE) / 9.0
+                raw_ytd["tax"] = 6.9911 * CRORE
+                raw_mtd["tax"] = (6.9911 * CRORE) / 9.0
 
 
         for cat in res:
@@ -556,9 +556,9 @@ def get_exec_summary(entity=None):
                 "ytd": 1628.9
             },
             "growth": {
-                "ebitda": {"value": 320.7, "yoy": 20.0, "qoq": -3.8},
-                "ebit": {"value": 223.2, "yoy": 13.5, "qoq": -14.9},
-                "pat": {"value": 97.5, "yoy": 4.0, "qoq": -3.4},
+                "ebitda": {"value": 320.7, "yoy": 20.0, "qoq": 2.0},
+                "ebit": {"value": 223.2, "yoy": 13.5, "qoq": 4.6},
+                "pat": {"value": 97.5, "yoy": 4.0, "qoq": 4.1},
             },
             "cashAndBank": 101.3,
             "netDebt": 597.6,
@@ -574,24 +574,24 @@ def get_exec_summary(entity=None):
     elif entity == "4000":
         return {
             "revenue": {
-                "mtd": 37.3,
-                "qtd": 111.9,
+                "mtd": 36.0,
+                "qtd": 108.0,
                 "ytd": 324.0
             },
             "growth": {
-                "ebitda": {"value": 34.9, "yoy": 20.0, "qoq": -1.7},
-                "ebit": {"value": 27.8, "yoy": 13.5, "qoq": -12.1},
-                "pat": {"value": 20.3, "yoy": 4.0, "qoq": -2.2},
+                "ebitda": {"value": 34.9, "yoy": 20.0, "qoq": -29.4},
+                "ebit": {"value": 27.8, "yoy": 13.5, "qoq": -44.5},
+                "pat": {"value": 20.3, "yoy": 4.0, "qoq": -38.7},
             },
-            "cashAndBank": 45.4,
-            "netDebt": -45.5,
-            "cashConversionCycle": 68,
+            "cashAndBank": 45.5,
+            "netDebt": -39.9,
+            "cashConversionCycle": 37,
             "workingCapital": 54.8,
             "readsAs": "Pitti Industries Private Limited (CIN: U31200TS2006PTC208072, inc. 19-Jan-2006, Hyderabad) manufactures electricity distribution and control apparatus (NIC 3120). Paid-up capital stands at ₹3.09 Cr with ₹5.00 Cr authorized capital.",
             "alerts": [
-                {"label": "DSO 35 days — electrical apparatus & control panel supply realizations on schedule", "severity": "low"},
+                {"label": "DSO 24 days — electrical apparatus & control panel supply realizations on schedule", "severity": "low"},
                 {"label": "MSME payables of ₹2.4 Cr for switchgear & component vendors due within 45 days", "severity": "medium"},
-                {"label": "Net cash surplus position of ₹45.5 Cr supporting control panel expansion", "severity": "low"},
+                {"label": "Net cash surplus position of ₹39.9 Cr supporting control panel expansion", "severity": "low"},
             ],
         }
     w = _entity_weight(entity)
@@ -602,9 +602,9 @@ def get_exec_summary(entity=None):
             "ytd": round(1952.9 * w, 2)
         },
         "growth": {
-            "ebitda": {"value": round(355.6 * w, 2), "yoy": 20.0, "qoq": -1.7},
-            "ebit": {"value": round(251.0 * w, 2), "yoy": 13.5, "qoq": -12.1},
-            "pat": {"value": round(117.8 * w, 2), "yoy": 4.0, "qoq": -2.2},
+            "ebitda": {"value": round(355.6 * w, 2), "yoy": 20.0, "qoq": -1.9},
+            "ebit": {"value": round(251.0 * w, 2), "yoy": 13.5, "qoq": -2.7},
+            "pat": {"value": round(117.8 * w, 2), "yoy": 4.0, "qoq": -5.7},
         },
         "cashAndBank": round(146.7 * w, 2),
         "netDebt": round(552.1 * w, 2),
@@ -799,15 +799,15 @@ def get_pl_bridge(entity=None):
         }
     elif entity == "4000":
         rev = 324.0
-        cogs = 193.8
+        cogs = 231.6
         gp = rev - cogs
-        opex = 95.3
-        ebitda = gp - opex
+        opex = 61.2
+        ebitda = 34.9
         depr = 7.1
-        ebit = ebitda - depr
-        finance = 7.0
-        tax = 0.5
-        pat = ebit - finance - tax
+        ebit = 27.8
+        finance = 0.6
+        tax = 7.0
+        pat = 20.3
         
         gm_pct = round((gp / rev) * 100, 1)
         ebitda_pct = round((ebitda / rev) * 100, 1)
@@ -827,9 +827,10 @@ def get_pl_bridge(entity=None):
                 {"label": "PAT", "value": round(pat, 1), "isSubtotal": True},
             ],
             "marginTrend": [
-                {"quarter": "Q1 FY26", "gm": round(gm_pct * 0.98, 1), "ebitda": round(ebitda_pct * 0.95, 1), "pat": round(pat_pct * 0.96, 1)},
-                {"quarter": "Q2 FY26", "gm": round(gm_pct * 0.99, 1), "ebitda": round(ebitda_pct * 0.98, 1), "pat": round(pat_pct * 0.98, 1)},
-                {"quarter": "Q3 FY26", "gm": gm_pct, "ebitda": ebitda_pct, "pat": pat_pct},
+                {"quarter": "Q1 FY26", "gm": 28.6, "ebitda": 11.5, "pat": 7.2},
+                {"quarter": "Q2 FY26", "gm": 28.5, "ebitda": 9.6, "pat": 5.5},
+                {"quarter": "Q3 FY26", "gm": 47.5, "ebitda": 19.5, "pat": 11.6},
+                {"quarter": "Q4 FY26", "gm": 21.5, "ebitda": 6.9, "pat": 3.6},
             ],
             "variance": {"budget": 300.0, "actual": round(rev, 1)},
             "watch": "Pitti Industries Private Limited (NIC 3120) focus on high-voltage protection apparatus, control panels, and distribution cabinets drives margin expansion as panel assembly scales.",
@@ -911,36 +912,35 @@ def get_cash_working_capital(entity=None):
         }
     elif entity == "4000":
         return {
-            "ccc": {"inventoryDays": 105, "receivableDays": 35, "payableDays": 65, "netDays": 75},
+            "ccc": {"inventoryDays": 30, "receivableDays": 24, "payableDays": 18, "netDays": 37},
             "arAgeing": [
-                {"bucket": "0-30", "amountCr": 42.0},
-                {"bucket": "31-60", "amountCr": 22.0},
-                {"bucket": "61-90", "amountCr": 11.0},
-                {"bucket": "90+", "amountCr": 7.0},
+                {"bucket": "0-30", "amountCr": 15.0},
+                {"bucket": "31-60", "amountCr": 8.0},
+                {"bucket": "61-90", "amountCr": 4.5},
+                {"bucket": "90+", "amountCr": 2.5},
             ],
             "inventoryAgeing": [
-                {"bucket": "Raw material", "amountCr": 98.2},
-                {"bucket": "WIP", "amountCr": 31.0},
-                {"bucket": "Finished", "amountCr": 15.5},
-                {"bucket": "Slow / non-moving", "amountCr": 7.7},
+                {"bucket": "Raw material", "amountCr": 18.2},
+                {"bucket": "WIP", "amountCr": 6.0},
+                {"bucket": "Finished", "amountCr": 4.5},
+                {"bucket": "Slow / non-moving", "amountCr": 0.4},
             ],
             "payablesAgeing": [
                 {"bucket": "Domestic", "amountCr": 14.9},
                 {"bucket": "MSME due <= 45d", "amountCr": 2.4},
             ],
             "dsoTrend": [
-                {"quarter": "Q1 FY26", "dso": 32},
-                {"quarter": "Q2 FY26", "dso": 34},
-                {"quarter": "Q3 FY26", "dso": 35},
+                {"quarter": "Q2 FY26", "dso": 35},
+                {"quarter": "Q4 FY26", "dso": 24},
             ],
             "payables": {"msme": 2.4, "nonMsme": 14.9},
             "netDebtBridge": {
                 "grossBorrowings": 0.0,
-                "cashAndBank": 45.4,
-                "netDebt": -45.5,
+                "cashAndBank": 45.5,
+                "netDebt": -39.9,
             },
-            "flag": "DSO stands at 35 days — ₹82.0 Cr in distribution apparatus & panel receivables.",
-            "freeCashFlowCr": -14.6,
+            "flag": "DSO stands at 24 days — ₹30.0 Cr in distribution apparatus & panel receivables.",
+            "freeCashFlowCr": 31.0,
         }
     w = _entity_weight(entity)
     return {
@@ -1003,18 +1003,18 @@ def get_ratios_valuation(entity=None):
         return {
             "asOf": "SAP BW/4HANA + NSE · 04-Jul 18:12 IST",
             "metrics": [
-                {"label": "Current Ratio", "value": "1.75x", "delta": "▲ 0.12", "trend": "up"},
-                {"label": "Quick Ratio", "value": "0.98x", "delta": "▲ 0.05", "trend": "up"},
-                {"label": "Debt / Equity", "value": "0.45x", "delta": "▼ 0.10", "trend": "up"},
+                {"label": "Current Ratio", "value": "2.89x", "delta": "▲ 0.12", "trend": "up"},
+                {"label": "Quick Ratio", "value": "1.88x", "delta": "▲ 0.05", "trend": "up"},
+                {"label": "Debt / Equity", "value": "0.00x", "delta": "no borrowings", "trend": "up"},
                 {"label": "Net Debt / EBITDA", "value": "0.0x", "delta": "net cash positive", "trend": "up"},
-                {"label": "Interest Coverage", "value": "4.0x", "delta": "strong", "trend": "up"},
-                {"label": "ROCE", "value": "18.2%", "delta": "▲ 150bps", "trend": "up"},
-                {"label": "ROE", "value": "14.5%", "delta": "—", "trend": "up"},
-                {"label": "EPS (TTM)", "value": "₹5.4", "delta": "▲ 5%", "trend": "up"},
+                {"label": "Interest Coverage", "value": "49.7x", "delta": "strong", "trend": "up"},
+                {"label": "ROCE", "value": "46.5%", "delta": "▲ 150bps", "trend": "up"},
+                {"label": "ROE", "value": "33.9%", "delta": "—", "trend": "up"},
+                {"label": "EPS (TTM)", "value": "₹65.6", "delta": "▲ 5%", "trend": "up"},
                 {"label": "P / E", "value": "25.0x", "delta": "—", "trend": "neutral"},
                 {"label": "EV / EBITDA", "value": "8.5x", "delta": "—", "trend": "neutral"},
                 {"label": "Market Cap", "value": "₹135 Cr", "delta": "▲ 2.1%", "trend": "up"},
-                {"label": "Net Debt", "value": "₹-45 Cr", "delta": "Net Cash", "trend": "up", "highlight": True},
+                {"label": "Net Debt", "value": "₹-39.9 Cr", "delta": "Net Cash", "trend": "up", "highlight": True},
                 {"label": "Covenant Headroom", "value": "1.5x", "delta": "comfortable", "trend": "up"},
             ],
             "closingHook": "End of executive review for Pitti Industries Private Limited (CIN: U31200TS2006PTC208072) — next, the order-to-cash and anomaly chapter.",
