@@ -48,67 +48,59 @@ def merge():
     writer = PdfWriter()
     page_count = 0
 
-    # Full merge order with correct chapter-to-dashboard mapping
+    # Full merge order with correct chapter-to-dashboard mapping for all 31 PDFs
     merge_order = [
         # --- Cover / Table of Contents ---
         {
-            "title": "Cover \u2014 Table of Contents",
+            "title": "Cover — Table of Contents",
             "files": [
-                os.path.join(PROJECT, "Pitti Group \u2014 CFO Storybook.pdf"),
+                os.path.join(PROJECT, "Pitti Group — CFO Storybook.pdf"),
             ],
         },
-        # --- Main Narrative (all 8 chapters in one scrolling page) ---
+        # --- Main Narrative ---
         {
-            "title": "CFO Storybook \u2014 Full Narrative",
-            "files": [sb(1)],
+            "title": "CFO Storybook — Full Narrative",
+            "files": [sb(1), sb(2), sb(3)],
         },
         # --- Chapter 1: Executive Summary ---
-        # Deep dive: Financial Statements (the detail behind the headline numbers)
         {
-            "title": "Chapter 1 \u2014 Executive Summary (Financial Statements Deep Dive)",
-            "files": [sb(2), sb(3)],
+            "title": "Chapter 1 — Executive Summary (Financial Statements Deep Dive)",
+            "files": [sb(4), sb(5), sb(6), sb(7), sb(8), sb(9)],
         },
         # --- Chapter 2: Value Chain ---
-        # Deep dive: Sales Analytics
         {
-            "title": "Chapter 2 \u2014 Value Chain (Sales Analytics Deep Dive)",
-            "files": [sb(4)],
+            "title": "Chapter 2 — Value Chain (Sales Analytics Deep Dive)",
+            "files": [sb(10), sb(11), sb(12)],
         },
         # --- Chapter 3: Margin Story ---
-        # Deep dive: Expense Analytics
         {
-            "title": "Chapter 3 \u2014 Margin Story (Expense Analytics Deep Dive)",
-            "files": [sb(5)],
+            "title": "Chapter 3 — Margin Story (Expense Analytics Deep Dive)",
+            "files": [sb(13), sb(14), sb(15)],
         },
         # --- Chapter 4: Cash & Working Capital ---
-        # Deep dive: Working Capital & Treasury
         {
-            "title": "Chapter 4 \u2014 Cash & Working Capital (Working Capital & Treasury Deep Dive)",
-            "files": [sb(6)],
-        },
-        # --- Chapter 5: Ratios & Valuation ---
-        # Deep dive: Ratios & Investor Relations
-        {
-            "title": "Chapter 5 \u2014 Ratios & Valuation (Ratios & Investor Relations Deep Dive)",
-            "files": [sb(7), sb(8), sb(9), sb(10), sb(11)],
-        },
-        # --- Chapter 6: Risk & Anomaly ---
-        # Deep dive: Exceptions & Compliance
-        {
-            "title": "Chapter 6 \u2014 Risk & Anomaly (Exceptions & Compliance Deep Dive)",
-            "files": [sb(12), sb(13), sb(14), sb(15)],
-        },
-        # --- Chapter 7: Capital Assets & RPT ---
-        # Deep dive: Capital Assets & RPT
-        {
-            "title": "Chapter 7 \u2014 Capital Assets & RPT (Deep Dive)",
+            "title": "Chapter 4 — Cash & Working Capital (Working Capital & Treasury Deep Dive)",
             "files": [sb(16), sb(17), sb(18)],
         },
-        # --- Chapter 8: Forex & Loans ---
-        # Deep dive: Forex & Loans
+        # --- Chapter 5: Ratios & Valuation ---
         {
-            "title": "Chapter 8 \u2014 Forex & Loans (Deep Dive)",
-            "files": [sb(19), sb(20), sb(21), sb(22)],
+            "title": "Chapter 5 — Ratios & Valuation (Ratios & Investor Relations Deep Dive)",
+            "files": [sb(19), sb(20), sb(21)],
+        },
+        # --- Chapter 6: Risk & Anomaly ---
+        {
+            "title": "Chapter 6 — Risk & Anomaly (Exceptions & Compliance Deep Dive)",
+            "files": [sb(22), sb(23), sb(24)],
+        },
+        # --- Chapter 7: Capital Assets & RPT ---
+        {
+            "title": "Chapter 7 — Capital Assets & RPT (Deep Dive)",
+            "files": [sb(25), sb(26), sb(27)],
+        },
+        # --- Chapter 8: Forex & Loans ---
+        {
+            "title": "Chapter 8 — Forex & Loans (Deep Dive)",
+            "files": [sb(28), sb(29), sb(30)],
         },
     ]
 
